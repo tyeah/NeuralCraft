@@ -43,6 +43,16 @@ def RNNLayer(incoming, hid_init, params, num_in, num_hidden, activation=T.nnet.r
   rnnwxh_name = add_param((num_in, num_hidden), params, w_xh_name, w_xh)
   rnnwhh_name = add_param((num_hidden, num_hidden), params, w_hh_name, w_hh)
   rnnb_name = add_param((num_hidden, ), params, b_name, b)
+
+  # setup hid_init
+  if isinstance(hid_init, int) or isinstance(hid_init, float):
+    hid_init = hid_init * T.ones((incoming.shape[0], num_hidden))
+  if isinstance(hid_init, np.ndarray):
+    assert hid_init.shape == (num_hidden, )
+    hid_init = np.array(hid_init, dtype=theano.config.floatX)
+    hid_init = hid_init * T.ones((incoming.shape[0], num_hidden))
+
+  # setup step function
   def step(income, hid_prev):
     return activation(income.dot(params[rnnwxh_name]) + hid_prev.dot(params[rnnwhh_name]) + params[rnnb_name])
   results, updates = theano.scan(fn=step,
