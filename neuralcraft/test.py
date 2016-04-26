@@ -13,6 +13,8 @@ filter_size = 3
 channel_size = 3
 hid_channel_size = 6
 dropout_p = 0.4
+vocab_size = 8
+embedding_size = 9
 
 trng = RandomStreams(1234)
 
@@ -142,10 +144,24 @@ def poolingTest():
   print pool_shape
   print f(x)
 
+def EmbeddingTest():
+  x = np.random.choice(range(vocab_size), [batch_size, x_size])
+
+  xt = T.imatrix()
+  xt = (xt, x.shape)
+  params = {}
+  yt, y_shape = EmbeddingLayer(xt, params, vocab_size, embedding_size)
+  print y_shape
+
+  f = theano.function([xt[0]], yt, allow_input_downcast=True)
+
+  print f(x)
+
 if __name__ == '__main__':
   #FCTest()
   #RNNTest()
   #LSTMTest()
-  Conv2DTest()
+  #Conv2DTest()
   #dropoutTest()
   #poolingTest()
+  EmbeddingTest()

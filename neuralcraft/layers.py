@@ -209,6 +209,20 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, activation=T.ta
   return (hid_state, output_shape)
 
 
+def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None):
+  '''
+  input a (batch of) iscalar i, output the corresponding embedding vector, which
+  is, the ith row of embedding matrix w.
+  num_in is the number of possible inputs (upper bound of i, vocabulary size)
+  '''
+  incoming, input_shape = incoming
+  output_shape = (input_shape[0], num_out)
+
+  w_name = add_param((num_in, num_out), params, w_name, w)
+
+  return (params[w_name][incoming], output_shape)
+
+
 def cross_entropy(yhat, y):
   last_dim_len = y.shape[-1]
   if y.ndim == yhat.ndim:
@@ -219,3 +233,16 @@ def cross_entropy(yhat, y):
     yhat = T.reshape(-1, last_dim_len)
     y = T.flatten(y)
   return T.mean(nnet.categorical_crossentropy(yhatt, yt))
+
+def reshape(shape_prev, shape_after):
+  if np.prod(shape_prev) == np.prod(shape_after):
+    return shape_after
+  assert np.prod(shape_after) < 0, "shape product changed: %s vs %s" % ((shape_prev,), (shape_after,))
+  id = np.where(np.array(shape_after) < 0)[0]
+  assert len(id) == 1, "more than one negative dim"
+  id = id[0]
+  dim_id = int(np.prod(shape_prev) / (np.prod(shape_after[:id]) * np.prod(shape_after[(id+1):])))
+  shape_out = list(shape_after)
+  shape_out[id] = dim_id
+  assert np.prod(shape_prev) == np.prod(shape_out), "inferred shape product changed"
+  return tuple(shape_out)
