@@ -3,11 +3,13 @@ To use this module, one need to define input tensors and an empty dictionary par
 Every layer function receives a tuple of (tensor expressions, input shape), params and param names and layer 
 definition options defines shared variables and places them in params. return another 
 (tensor expression(s), output_shape)
+when defining a net, alwayse use 1 as batch_size, which will not influence the actual net
 '''
 import theano
 from theano import tensor as T
 from theano.tensor import nnet
 import numpy as np
+import pickle as pkl
 
 def name_suf(name, suffix):
   if name == None:
@@ -223,6 +225,14 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None):
   return (params[w_name][incoming], output_shape)
 
 
+def save_params(filepath, params):
+  pkl.dump(params, open(filepath, 'w'));
+
+
+def load_params(filepath):
+  return pkl.load(open(filepath, 'r'));
+
+
 def cross_entropy(yhat, y):
   last_dim_len = y.shape[-1]
   if y.ndim == yhat.ndim:
@@ -233,6 +243,7 @@ def cross_entropy(yhat, y):
     yhat = T.reshape(-1, last_dim_len)
     y = T.flatten(y)
   return T.mean(nnet.categorical_crossentropy(yhatt, yt))
+
 
 def reshape(shape_prev, shape_after):
   if np.prod(shape_prev) == np.prod(shape_after):
