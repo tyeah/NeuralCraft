@@ -9,7 +9,6 @@ import theano
 from theano import tensor as T
 from theano.tensor import nnet
 import numpy as np
-import pickle as pkl
 
 def name_suf(name, suffix):
   if name == None:
@@ -123,11 +122,10 @@ def poolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, paddin
   return output, output_shape
 
 
-def RNNLayer(incoming, hid_init, params, num_hidden, activation=nnet.relu, 
+def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.relu, only_return_final=False,
     w_xh_name=None, w_hh_name=None, b_name=None, w_xh=None, w_hh=None, b=None):
   incoming, input_shape = incoming
   num_in = input_shape[-1]
-  output_shape = (input_shape[0], input_shape[1], num_hidden)
 
   rnnwxh_name = add_param((num_in, num_hidden), params, w_xh_name, w_xh)
   rnnwhh_name = add_param((num_hidden, num_hidden), params, w_hh_name, w_hh)
@@ -144,14 +142,26 @@ def RNNLayer(incoming, hid_init, params, num_hidden, activation=nnet.relu,
   # setup step function
   def step(income, hid_prev):
     return activation(income.dot(params[rnnwxh_name]) + hid_prev.dot(params[rnnwhh_name]) + params[rnnb_name])
-  results, updates = theano.scan(fn=step,
-      outputs_info=[{'initial':hid_init, 'taps':[-1]}],
-      sequences=[incoming.dimshuffle((1, 0, 2))],
-      n_steps=incoming.shape[1])
-  return (results.dimshuffle((1, 0, 2)), output_shape)
+  def step_mask(income, m, hid_prev):
+    return T.switch(m, step(income, hid_prev), hid_prev)
+  if mask is not None:
+    results, updates = theano.scan(fn=step_mask,
+        outputs_info=[{'initial':hid_init, 'taps':[-1]}],
+        sequences=[incoming.dimshuffle((1, 0, 2)), mask.dimshuffle(1, 0, 'x')])
+  else:
+    results, updates = theano.scan(fn=step,
+        outputs_info=[{'initial':hid_init, 'taps':[-1]}],
+        sequences=[incoming.dimshuffle((1, 0, 2))])
+
+  if only_return_final:
+    output_shape = (input_shape[0], num_hidden)
+    return (results[0][-1], output_shape)
+  else:
+    output_shape = (input_shape[0], input_shape[1], num_hidden)
+    return (results.dimshuffle((1, 0, 2)), output_shape)
 
 
-def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, activation=T.tanh, gate_act=nnet.sigmoid,
+def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False,
     w_xi_name=None, w_hi_name=None, b_i_name=None, w_xi=None, w_hi=None, b_i=None,
     w_xf_name=None, w_hf_name=None, b_f_name=None, w_xf=None, w_hf=None, b_f=None,
     w_xo_name=None, w_ho_name=None, b_o_name=None, w_xo=None, w_ho=None, b_o=None,
@@ -161,7 +171,6 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, activation=T.ta
   '''
   incoming, input_shape = incoming
   num_in = input_shape[-1]
-  output_shape = (input_shape[0], input_shape[1], num_hidden)
 
   # add parameters
   wxi_name = add_param((num_in, num_hidden), params, w_xi_name, w_xi)
@@ -186,6 +195,11 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, activation=T.ta
     cell = f * cell_prev + i * g
     hid = o * activation(cell)
     return [hid, cell]
+  def step_mask(income, m, hid_prev, cell_prev):
+    hid, cell = step(income, hid_prev, cell_prev)
+    hid = T.switch(m, hid, hid_prev)
+    cell = T.switch(m, cell, cell_prev)
+    return [hid, cell]
 
   # setup hid_init and cell_init
   if isinstance(hid_init, int) or isinstance(hid_init, float):
@@ -202,13 +216,24 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, activation=T.ta
     cell_init = cell_init * T.ones((incoming.shape[0], num_hidden))
 
   # compose loop
-  results, updates = theano.scan(fn=step,
-      #outputs_info=[{'initial':[hid_init, cell_init], 'taps':[-1]}],
-      outputs_info=[hid_init, cell_init],
-      sequences=[incoming.dimshuffle((1, 0, 2))],
-      n_steps=incoming.shape[1])
-  hid_state, cell_stat = results[0].dimshuffle((1, 0, 2)), results[1].dimshuffle((1, 0, 2))
-  return (hid_state, output_shape)
+  if mask is not None:
+    results, updates = theano.scan(fn=step_mask,
+        outputs_info=[hid_init, cell_init],
+        sequences=[incoming.dimshuffle((1, 0, 2)), mask.dimshuffle(1, 0, 'x')],
+        n_steps=incoming.shape[1])
+  else:
+    results, updates = theano.scan(fn=step,
+        outputs_info=[hid_init, cell_init],
+        sequences=[incoming.dimshuffle((1, 0, 2))],
+        n_steps=incoming.shape[1])
+  if only_return_final:
+    output_shape = (input_shape[0], num_hidden)
+    return (results[0][-1], output_shape)
+  else:
+    output_shape = (input_shape[0], input_shape[1], num_hidden)
+    #cell_stat = results[1].dimshuffle((1, 0, 2))
+    hid_state = results[0].dimshuffle((1, 0, 2))
+    return (hid_state, output_shape)
 
 
 def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None):
@@ -223,37 +248,3 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None):
   w_name = add_param((num_in, num_out), params, w_name, w)
 
   return (params[w_name][incoming], output_shape)
-
-
-def save_params(filepath, params):
-  pkl.dump(params, open(filepath, 'w'));
-
-
-def load_params(filepath):
-  return pkl.load(open(filepath, 'r'));
-
-
-def cross_entropy(yhat, y):
-  last_dim_len = y.shape[-1]
-  if y.ndim == yhat.ndim:
-    #y is one-hot
-    yhat = T.reshape(-1, last_dim_len)
-    y = T.reshape(-1, last_dim_len)
-  elif y.ndim == yhat.ndim + 1:
-    yhat = T.reshape(-1, last_dim_len)
-    y = T.flatten(y)
-  return T.mean(nnet.categorical_crossentropy(yhatt, yt))
-
-
-def reshape(shape_prev, shape_after):
-  if np.prod(shape_prev) == np.prod(shape_after):
-    return shape_after
-  assert np.prod(shape_after) < 0, "shape product changed: %s vs %s" % ((shape_prev,), (shape_after,))
-  id = np.where(np.array(shape_after) < 0)[0]
-  assert len(id) == 1, "more than one negative dim"
-  id = id[0]
-  dim_id = int(np.prod(shape_prev) / (np.prod(shape_after[:id]) * np.prod(shape_after[(id+1):])))
-  shape_out = list(shape_after)
-  shape_out[id] = dim_id
-  assert np.prod(shape_prev) == np.prod(shape_out), "inferred shape product changed"
-  return tuple(shape_out)

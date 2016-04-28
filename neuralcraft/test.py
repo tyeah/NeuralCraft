@@ -1,5 +1,6 @@
 from layers import *
 from optimizer import *
+from utils import *
 import numpy as np
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
@@ -18,7 +19,7 @@ embedding_size = 9
 
 trng = RandomStreams(1234)
 
-def FCTest():
+def sgdTest():
   x = np.random.randn(batch_size, x_size)
   y = np.random.rand(batch_size) > 0.5
 
@@ -29,6 +30,7 @@ def FCTest():
   xout = FCLayer(xt, params, output_size)
   yhatt = T.nnet.softmax(xout[0])
   loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt))
+  '''
   updates = sgd(loss, params)
 
   f = theano.function([xt[0], yt], loss, updates = updates, allow_input_downcast=True) 
@@ -36,18 +38,47 @@ def FCTest():
   for i in range(num_iter):
     print f(x, y)
     print [v.get_value() for v in params.values()]
+  '''
+  f_update = sgd(loss, [xt[0], yt], params)
+  for i in range(num_iter):
+    print f_update(x, y)
+    print [v.get_value() for v in params.values()]
+
+def FCTest():
+  x = np.random.randn(batch_size, x_size)
+  xt = T.matrix()
+  xt = (xt, x.shape)
+  params = {}
+  xout = FCLayer(xt, params, output_size)
+  f = theano.function([xt[0]], xout, updates = updates, allow_input_downcast=True) 
+  print f(x)
 
 def RNNTest():
   x = np.random.randn(batch_size, seq_size, x_size)
+  mask = np.random.rand(batch_size, seq_size) > 0.5
   hid = np.random.randn(batch_size, hid_size)
   y = np.random.rand(batch_size, seq_size) > 0.5
 
   xt = T.tensor3()
   xt = (xt, x.shape)
+  maskt = T.bmatrix()
   hidt = T.matrix()
   yt = T.imatrix()
   params = {}
-  rnnout, rnnout_shape = RNNLayer(xt, hidt, params, hid_size)
+
+  #without mask
+  rnnout, rnnout_shape = RNNLayer(xt, hidt, params, hid_size, only_return_final=True)
+  f = theano.function([xt[0], hidt], rnnout, allow_input_downcast=True)
+  print 'without mask:'
+  print f(x, hid)
+  #with mask
+  params = {}
+  rnnout, rnnout_shape = RNNLayer(xt, hidt, params, hid_size, maskt)
+  f = theano.function([xt[0], hidt, maskt], rnnout, allow_input_downcast=True)
+  print 'with mask:'
+  print mask
+  print f(x, hid, mask)
+
   rnnout = rnnout.reshape((-1, rnnout.shape[-1]))
   rnnout_shape = (np.prod(rnnout_shape[-1:]), rnnout_shape[-1])
   # neet to reshape flatten first 2 dim of rnn output before inputing to FCLayer
@@ -55,26 +86,39 @@ def RNNTest():
   loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt.flatten()))
   updates = sgd(loss, params)
 
-  f = theano.function([xt[0], hidt, yt], loss, updates = updates, allow_input_downcast=True) 
+  f = theano.function([xt[0], hidt, maskt, yt], loss, updates = updates, allow_input_downcast=True) 
 
   for i in range(num_iter):
-    print f(x, hid, y)
+    print f(x, hid, mask, y)
     #print [v.get_value() for v in params.values()]
 
 def LSTMTest():
   x = np.random.randn(batch_size, seq_size, x_size)
+  mask = np.random.rand(batch_size, seq_size) > 0.5
   hid = np.random.randn(batch_size, hid_size)
   cell = np.random.randn(batch_size, hid_size)
   y = np.random.rand(batch_size, seq_size) > 0.5
 
   xt = T.tensor3()
   xt = (xt, x.shape)
+  maskt = T.bmatrix()
   hidt = T.matrix()
   cellt = T.matrix()
   yt = T.imatrix()
   params = {}
-  #rnnout = LSTMLayer(xt, hidt, cellt, params, x_size, hid_size)
+
+  rnnout, rnnout_shape = LSTMLayer(xt, 0, np.random.randn(hid_size), params, hid_size, maskt, only_return_final=True)
+  f = theano.function([xt[0], maskt], rnnout, allow_input_downcast=True)
+  print 'with mask:'
+  print mask
+  print f(x, mask)
+
+  params = {}
   rnnout, rnnout_shape = LSTMLayer(xt, 0, np.random.randn(hid_size), params, hid_size)
+  f = theano.function([xt[0]], rnnout, allow_input_downcast=True)
+  print 'without mask:'
+  print f(x)
+
   rnnout = rnnout.reshape((-1, rnnout.shape[-1]))
   rnnout_shape = (np.prod(rnnout_shape[-1:]), rnnout_shape[-1])
   # neet to reshape flatten first 2 dim of rnn output before inputing to FCLayer
@@ -85,8 +129,8 @@ def LSTMTest():
   #f = theano.function([xt, hidt, cellt, yt], loss, updates = updates, allow_input_downcast=True) 
   f = theano.function([xt[0], yt], loss, updates = updates, allow_input_downcast=True) 
 
+  print 'f and params:'
   for i in range(num_iter):
-    #print f(x, hid, cell, y)
     print f(x, y)
     print [v.get_value() for v in params.values()]
 
