@@ -5,10 +5,12 @@ definition options defines shared variables and places them in params. return an
 (tensor expression(s), output_shape)
 when defining a net, alwayse use 1 as batch_size, which will not influence the actual net
 '''
+#TODO: Use astype to define shared variable is problem prone. Fix? Always pass float32 to define?
 import theano
 from theano import tensor as T
 from theano.tensor import nnet
 import numpy as np
+from utils import cast_floatX
 
 def name_suf(name, suffix):
   if name == None:
@@ -20,8 +22,11 @@ def add_param(shape, params, name=None, val=None):
   name = name_suf(name, '_%d' % len(params))
   if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
     assert(shape == val.get_value().shape)
+    assert(val.dtype == theano.config.floatX)
+    '''
     if val.dtype != theano.config.floatX:
       val = val.astype(theano.config.floatX)
+    '''
     params[name] = val
     return name
   if val is None:

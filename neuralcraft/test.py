@@ -19,29 +19,21 @@ embedding_size = 9
 
 trng = RandomStreams(1234)
 
-def sgdTest():
+def optimizerTest(optimizer=sgd):
   x = np.random.randn(batch_size, x_size)
   y = np.random.rand(batch_size) > 0.5
 
   xt = T.matrix()
   xt = (xt, x.shape)
   yt = T.ivector()
+  lr = T.scalar()
   params = {}
   xout = FCLayer(xt, params, output_size)
   yhatt = T.nnet.softmax(xout[0])
   loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt))
-  '''
-  updates = sgd(loss, params)
-
-  f = theano.function([xt[0], yt], loss, updates = updates, allow_input_downcast=True) 
-
+  f_update = optimizer(loss, [xt[0], yt], params, lr=lr)
   for i in range(num_iter):
-    print f(x, y)
-    print [v.get_value() for v in params.values()]
-  '''
-  f_update = sgd(loss, [xt[0], yt], params)
-  for i in range(num_iter):
-    print f_update(x, y)
+    print f_update(x, y, 0.01)
     print [v.get_value() for v in params.values()]
 
 def FCTest():

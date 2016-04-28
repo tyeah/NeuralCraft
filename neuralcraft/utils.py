@@ -37,3 +37,6 @@ def reshape(shape_prev, shape_after):
   shape_out[id] = dim_id
   assert np.prod(shape_prev) == np.prod(shape_out), "inferred shape product changed"
   return tuple(shape_out)
+
+def cast_floatX(x):
+  return np.asarray(x, dtype=theano.config.floatX)
