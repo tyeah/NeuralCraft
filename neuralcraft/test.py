@@ -1,5 +1,5 @@
 from layers import *
-from optimizer import *
+from optimizers import *
 from utils import *
 import numpy as np
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
@@ -31,7 +31,9 @@ def optimizerTest(optimizer=sgd):
   xout = FCLayer(xt, params, output_size)
   yhatt = T.nnet.softmax(xout[0])
   loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt))
-  f_update = optimizer(loss, [xt[0], yt], params, lr=lr)
+
+  options = {'lr': lr}
+  f_update = optimizer(loss, [xt[0], yt], params, options=options)
   for i in range(num_iter):
     print f_update(x, y, 0.01)
     print [v.get_value() for v in params.values()]
@@ -200,4 +202,5 @@ if __name__ == '__main__':
   #Conv2DTest()
   #dropoutTest()
   #poolingTest()
-  EmbeddingTest()
+  #EmbeddingTest()
+  optimizerTest()

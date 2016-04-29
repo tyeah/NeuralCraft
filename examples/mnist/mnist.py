@@ -87,6 +87,7 @@ def build_mlp(input_shape=(1, 1, 28, 28), optimizer=optimizers.sgd):
   x = T.tensor4()
   y = T.ivector()
   lr = T.scalar()
+  options = {'lr': lr}
 
   x_in = (x, input_shape)
   params = {}
@@ -98,7 +99,7 @@ def build_mlp(input_shape=(1, 1, 28, 28), optimizer=optimizers.sgd):
 
   f_pred_prob = theano.function([x], pred, name='f_pred_prob', allow_input_downcast=True)
   f_pred = theano.function([x], pred.argmax(axis=1), name='f_pred', allow_input_downcast=True)
-  opt = optimizer(cost, [x, y], params, lr)
+  opt = optimizer(cost, [x, y], params, options)
   return f_pred_prob, f_pred, opt, params
 
 def pred_acc(f_pred, x, y):

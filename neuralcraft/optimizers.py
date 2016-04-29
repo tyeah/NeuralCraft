@@ -3,20 +3,13 @@ from theano import tensor as T
 import numpy as np
 from utils import cast_floatX
 
-'''
-def sgd(cost, params, lr=1e-2):
-  grads = T.grad(cost, params.values())
-  updates = []
-  for p, g in zip(params.values(), grads):
-    updates.append([p, p - g * lr])
-  return updates
-
-'''
-def sgd(cost, incomings, params, lr=1e-2):
+def sgd(cost, incomings, params, options):
   '''
   #incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
   grads = T.grad(cost, params.values())
+
   updates = []
   for p, g in zip(params.values(), grads):
     updates.append([p, p - g * lr])
@@ -25,10 +18,14 @@ def sgd(cost, incomings, params, lr=1e-2):
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
 
-def momentum(cost, incomings, params, lr=1e-2, mu=0.9):
+
+def momentum(cost, incomings, params, options):
   '''
   incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
+  mu = options.get('mu', 0.9)
+
   grads = T.grad(cost, params.values())
   velocity = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   updates = []
@@ -44,10 +41,14 @@ def momentum(cost, incomings, params, lr=1e-2, mu=0.9):
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
 
-def nesterov_momentum(cost, incomings, params, lr=1e-2, mu=0.9):
+
+def nesterov_momentum(cost, incomings, params, options):
   '''
   incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
+  mu = options.get('mu', 0.9)
+
   grads = T.grad(cost, params.values())
   velocity = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   updates = []
@@ -61,10 +62,14 @@ def nesterov_momentum(cost, incomings, params, lr=1e-2, mu=0.9):
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
 
-def adagrad(cost, incomings, params, lr=1e-2, epsilon=1e-8):
+
+def adagrad(cost, incomings, params, options):
   '''
   incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
+  epsilon = options.get('epsilon', 1e-8)
+
   grads = T.grad(cost, params.values())
   cache = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   updates = []
@@ -78,10 +83,14 @@ def adagrad(cost, incomings, params, lr=1e-2, epsilon=1e-8):
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
 
-def rmsprop(cost, incomings, params, lr=1e-2, dr=0.99, epsilon=1e-8):
+def rmsprop(cost, incomings, params, options):
   '''
   incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
+  dr = options.get('dr', 1e-2) #decay rate
+  epsilon = options.get('epsilon', 1e-8)
+
   grads = T.grad(cost, params.values())
   cache = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   updates = []
@@ -95,10 +104,16 @@ def rmsprop(cost, incomings, params, lr=1e-2, dr=0.99, epsilon=1e-8):
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
 
-def adam(cost, incomings, params, lr=1e-2, beta1=0.9, beta2=0.999, epsilon=1e-8):
+
+def adam(cost, incomings, params, options):
   '''
   incomings should be a list
   '''
+  lr = options.get('lr', 1e-2)
+  beta1 = options.get('beta1', 0.9)
+  beta2 = options.get('beta2', 0.999)
+  epsilon = options.get('epsilon', 1e-8)
+
   grads = T.grad(cost, params.values())
   velocity = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   momentum = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]

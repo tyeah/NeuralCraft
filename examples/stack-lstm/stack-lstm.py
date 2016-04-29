@@ -61,6 +61,7 @@ def build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_d
   mask = T.bmatrix('mask')
   y = T.vector('y', dtype='int64')
   lr = T.scalar()
+  options = {'lr': lr}
 
   net = {}
   params = {}
@@ -82,7 +83,7 @@ def build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_d
 
   f_pred_prob = theano.function([x, mask], pred, name='f_pred_prob', allow_input_downcast=True)
   f_pred = theano.function([x, mask], pred.argmax(axis=1), name='f_pred', allow_input_downcast=True)
-  opt = optimizer(cost, [x, mask, y], params, lr=lr)
+  opt = optimizer(cost, [x, mask, y], params, options=options)
   #opt = theano.function([x, mask, y], cost, allow_input_downcast=True)
 
   return f_pred_prob, f_pred, opt, params, use_noise
