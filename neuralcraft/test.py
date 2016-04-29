@@ -44,7 +44,7 @@ def FCTest():
   xt = (xt, x.shape)
   params = {}
   xout = FCLayer(xt, params, output_size)
-  f = theano.function([xt[0]], xout, updates = updates, allow_input_downcast=True) 
+  f = theano.function([xt[0]], xout[0], allow_input_downcast=True) 
   print f(x)
 
 def RNNTest():
@@ -73,19 +73,6 @@ def RNNTest():
   print mask
   print f(x, hid, mask)
 
-  rnnout = rnnout.reshape((-1, rnnout.shape[-1]))
-  rnnout_shape = (np.prod(rnnout_shape[-1:]), rnnout_shape[-1])
-  # neet to reshape flatten first 2 dim of rnn output before inputing to FCLayer
-  yhatt, _ = FCLayer((rnnout, rnnout_shape), params, output_size, activation=T.nnet.softmax)
-  loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt.flatten()))
-  updates = sgd(loss, params)
-
-  f = theano.function([xt[0], hidt, maskt, yt], loss, updates = updates, allow_input_downcast=True) 
-
-  for i in range(num_iter):
-    print f(x, hid, mask, y)
-    #print [v.get_value() for v in params.values()]
-
 def LSTMTest():
   x = np.random.randn(batch_size, seq_size, x_size)
   mask = np.random.rand(batch_size, seq_size) > 0.5
@@ -113,21 +100,6 @@ def LSTMTest():
   print 'without mask:'
   print f(x)
 
-  rnnout = rnnout.reshape((-1, rnnout.shape[-1]))
-  rnnout_shape = (np.prod(rnnout_shape[-1:]), rnnout_shape[-1])
-  # neet to reshape flatten first 2 dim of rnn output before inputing to FCLayer
-  yhatt, _ = FCLayer((rnnout, rnnout_shape), params, output_size, activation=T.nnet.softmax)
-  loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt.flatten()))
-  updates = sgd(loss, params)
-
-  #f = theano.function([xt, hidt, cellt, yt], loss, updates = updates, allow_input_downcast=True) 
-  f = theano.function([xt[0], yt], loss, updates = updates, allow_input_downcast=True) 
-
-  print 'f and params:'
-  for i in range(num_iter):
-    print f(x, y)
-    print [v.get_value() for v in params.values()]
-
 def Conv2DTest():
   x = np.random.randn(batch_size, channel_size, x_size, x_size)
   y = np.random.rand(batch_size) > 0.5
@@ -139,19 +111,7 @@ def Conv2DTest():
   cnnout = Conv2DLayer(xt, params, hid_channel_size, filter_size)
   f = theano.function([xt[0]], cnnout[0], allow_input_downcast=True) 
   print f(x).shape, cnnout[1]
-
-
-  yhatt, _ = FCLayer(cnnout, params, output_size, activation=T.nnet.softmax)
-  loss = T.mean(T.nnet.categorical_crossentropy(yhatt, yt.flatten()))
-  updates = sgd(loss, params)
-
-  #f = theano.function([xt, hidt, cellt, yt], loss, updates = updates, allow_input_downcast=True) 
-  f = theano.function([xt[0], yt], loss, updates = updates, allow_input_downcast=True) 
-
-  for i in range(num_iter):
-    #print f(x, hid, cell, y)
-    print f(x, y)
-    print [v.get_value() for v in params.values()]
+  print f(x)
 
 def dropoutTest():
   x = np.random.randn(batch_size, seq_size, x_size)
@@ -164,12 +124,6 @@ def dropoutTest():
 
   x = np.random.randn(batch_size, seq_size, x_size)
   print f(x, True)
-
-  use_noise = 1
-  yt, _ = dropoutLayer(xt, use_noise, trng, dropout_p)
-  f = theano.function([xt[0]], yt, allow_input_downcast=True) 
-
-  print f(x)
 
 def poolingTest():
   x = np.random.randn(batch_size, 10, 10)
@@ -196,11 +150,11 @@ def EmbeddingTest():
   print f(x)
 
 if __name__ == '__main__':
-  #FCTest()
-  #RNNTest()
-  #LSTMTest()
-  #Conv2DTest()
-  #dropoutTest()
-  #poolingTest()
-  #EmbeddingTest()
+  FCTest()
+  RNNTest()
+  LSTMTest()
+  Conv2DTest()
+  dropoutTest()
+  poolingTest()
+  EmbeddingTest()
   optimizerTest()
