@@ -1,5 +1,8 @@
 *.pyc
 *.swp
-EXP/data
+*.gz
+*.pkl
+*.npz
+*.ipynb
+examples/data
 *checkpoint.ipynb
-EXP

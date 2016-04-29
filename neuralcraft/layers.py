@@ -19,7 +19,8 @@ def name_suf(name, suffix):
     return name + suffix
 
 def add_param(shape, params, name=None, val=None):
-  name = name_suf(name, '_%d' % len(params))
+  if name is None:
+    name = name_suf(name, '_%d' % len(params))
   if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
     assert(shape == val.get_value().shape)
     assert(val.dtype == theano.config.floatX)
@@ -30,9 +31,11 @@ def add_param(shape, params, name=None, val=None):
     params[name] = val
     return name
   if val is None:
-    val = np.random.randn(*shape)
+    val = cast_floatX(np.random.randn(*shape))
+  else:
+    val = cast_floatX(val)
   assert(val.shape == shape)
-  params[name] = theano.shared(np.asarray(val, dtype=theano.config.floatX))
+  params[name] = theano.shared(val)
   return name
 
 def FCLayer(incoming, params, num_out, activation=nnet.relu, 
@@ -41,9 +44,11 @@ def FCLayer(incoming, params, num_out, activation=nnet.relu,
   num_in = np.prod(input_shape[1:])
 
   output_shape = (input_shape[0], num_out)
-  w_name = name_suf(w_name, 'W_fc')
-  b_name = name_suf(b_name, 'b_fc')
+  if w_name is None:
+    w_name = name_suf(w_name, 'W_fc'+'_%d' % len(params))
   w_name = add_param((num_in, num_out), params, w_name, w)
+  if b_name is None:
+    b_name = name_suf(b_name, 'b_fc'+'_%d' % len(params))
   b_name = add_param((num_out,), params, b_name, b)
   if incoming.ndim > 2:
     incoming = incoming.flatten(2)
@@ -97,11 +102,16 @@ def dropoutLayer(incoming, use_noise, trng, p):
   proj = T.switch(use_noise,
                   incoming *
                   trng.binomial(incoming.shape, p=p, n=1, dtype=incoming.dtype),
-                  incoming * p)
+                  #trng.binomial(incoming.shape, p=p, n=1, dtype=theano.config.floatX),
+                  incoming * cast_floatX(p))
+  #return (proj.astype(theano.config.floatX), output_shape)
   return (proj, output_shape)
 
 
 def poolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, padding=0, mode='max'):
+  '''
+  2D pooling
+  '''
   incoming, input_shape = incoming
   input_h, input_w = input_shape[-2:]
   if not ds_w:
