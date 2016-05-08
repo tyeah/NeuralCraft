@@ -6,11 +6,18 @@ definition options defines shared variables and places them in params. return an
 when defining a net, alwayse use 1 as batch_size, which will not influence the actual net
 '''
 #TODO: Use astype to define shared variable is problem prone. Fix? Always pass float32 to define?
+#TODO: add bias term in conv
+#TODO: add init module
+#TODO: check if rnn and lstm is wrong
+#TODO: change lstm to do matrix mul at once
+#TODO: INITIALIZE
+#TODO: GRAD_CLIP
 import theano
 from theano import tensor as T
 from theano.tensor import nnet
 import numpy as np
 from utils import cast_floatX
+import init
 
 def name_suf(name, suffix):
   if name == None:
@@ -18,7 +25,16 @@ def name_suf(name, suffix):
   else:
     return name + suffix
 
-def add_param(shape, params, name=None, val=None):
+w_initializer = lambda shape: cast_floatX(0.01*np.random.randn(*shape))
+'''
+def w_initializer(shape):
+  print shape
+  print cast_floatX(0.01*np.random.randn(*shape))
+  return cast_floatX(0.01*np.random.randn(*shape))
+  '''
+b_initializer = lambda shape: cast_floatX(np.zeros(shape))
+
+def add_param(shape, params, name=None, val=None, initializer=init.HeUniform):
   if name is None:
     name = name_suf(name, '_%d' % len(params))
   if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
@@ -31,7 +47,7 @@ def add_param(shape, params, name=None, val=None):
     params[name] = val
     return name
   if val is None:
-    val = cast_floatX(np.random.randn(*shape))
+    val = cast_floatX(initializer(shape))
   else:
     val = cast_floatX(val)
   assert(val.shape == shape)
@@ -39,24 +55,24 @@ def add_param(shape, params, name=None, val=None):
   return name
 
 def FCLayer(incoming, params, num_out, activation=nnet.relu, 
-    w_name=None, b_name=None, w=None, b=None):
+    w_name=None, b_name=None, w=None, b=None, 
+    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
   incoming, input_shape = incoming
   num_in = np.prod(input_shape[1:])
 
   output_shape = (input_shape[0], num_out)
-  if w_name is None:
-    w_name = name_suf(w_name, 'W_fc'+'_%d' % len(params))
-  w_name = add_param((num_in, num_out), params, w_name, w)
-  if b_name is None:
-    b_name = name_suf(b_name, 'b_fc'+'_%d' % len(params))
-  b_name = add_param((num_out,), params, b_name, b)
+  w_name = w_name or 'fc_w_%d' % len(params)
+  b_name = b_name or 'b_fc_%d' % len(params)
+  w_name = add_param((num_in, num_out), params, w_name, w, w_initializer)
+  b_name = add_param((num_out,), params, b_name, b, b_initializer)
   if incoming.ndim > 2:
     incoming = incoming.flatten(2)
   return (activation(incoming.dot(params[w_name]) + params[b_name]), output_shape)
 
 
 def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None, filter_name=None,
-    stride_h=None, stride_w=None, padding='half', activation=nnet.relu):
+    stride_h=None, stride_w=None, padding='half', activation=nnet.relu,
+    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
   '''
   incoming shoule be a tensor4: (batch_size, channel_size, height, width)
   filter should be None or ndarray or shared
@@ -78,7 +94,7 @@ def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None,
       or (isinstance(filter, theano.tensor.sharedvar.TensorSharedVariable) and \
       filter.get_value().shape==(num_out, incoming.shape[1], filter_h, filter_w))
   filter_name = add_param((num_out, num_in, filter_h, filter_w), 
-      params, filter_name, filter)
+      params, filter_name or 'conv2d_filter_%d' % len(params), filter, w_initializer)
   if padding == 'half':
     output_h, output_w = input_h, input_w
   else:
@@ -138,13 +154,14 @@ def poolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, paddin
 
 
 def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.relu, only_return_final=False,
-    w_xh_name=None, w_hh_name=None, b_name=None, w_xh=None, w_hh=None, b=None):
+    w_xh_name=None, w_hh_name=None, b_name=None, w_xh=None, w_hh=None, b=None,
+    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
   incoming, input_shape = incoming
   num_in = input_shape[-1]
 
-  rnnwxh_name = add_param((num_in, num_hidden), params, w_xh_name, w_xh)
-  rnnwhh_name = add_param((num_hidden, num_hidden), params, w_hh_name, w_hh)
-  rnnb_name = add_param((num_hidden, ), params, b_name, b)
+  rnnwxh_name = add_param((num_in, num_hidden), params, w_xh_name or 'rnn_wxh_%d' % len(params), w_xh, w_initializer)
+  rnnwhh_name = add_param((num_hidden, num_hidden), params, w_hh_name or 'rnn_whh_%d' % len(params), w_hh, w_initializer)
+  rnnb_name = add_param((num_hidden, ), params, b_name or 'rnn_b_%d' % len(params), b, b_initializer)
 
   # setup hid_init
   if isinstance(hid_init, int) or isinstance(hid_init, float):
@@ -170,7 +187,7 @@ def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.
 
   if only_return_final:
     output_shape = (input_shape[0], num_hidden)
-    return (results[0][-1], output_shape)
+    return (results[-1], output_shape)
   else:
     output_shape = (input_shape[0], input_shape[1], num_hidden)
     return (results.dimshuffle((1, 0, 2)), output_shape)
@@ -180,7 +197,8 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
     w_xi_name=None, w_hi_name=None, b_i_name=None, w_xi=None, w_hi=None, b_i=None,
     w_xf_name=None, w_hf_name=None, b_f_name=None, w_xf=None, w_hf=None, b_f=None,
     w_xo_name=None, w_ho_name=None, b_o_name=None, w_xo=None, w_ho=None, b_o=None,
-    w_xc_name=None, w_hc_name=None, b_c_name=None, w_xc=None, w_hc=None, b_c=None):
+    w_xc_name=None, w_hc_name=None, b_c_name=None, w_xc=None, w_hc=None, b_c=None,
+    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
   '''
   hid_init and cell_init can be a number, an array or a tensor expression
   '''
@@ -188,26 +206,37 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
   num_in = input_shape[-1]
 
   # add parameters
-  wxi_name = add_param((num_in, num_hidden), params, w_xi_name, w_xi)
-  whi_name = add_param((num_hidden, num_hidden), params, w_hi_name, w_hi)
-  bi_name = add_param((num_hidden, ), params, b_i_name, b_i)
-  wxf_name = add_param((num_in, num_hidden), params, w_xf_name, w_xf)
-  whf_name = add_param((num_hidden, num_hidden), params, w_hf_name, w_hf)
-  bf_name = add_param((num_hidden, ), params, b_f_name, b_f)
-  wxo_name = add_param((num_in, num_hidden), params, w_xo_name, w_xo)
-  who_name = add_param((num_hidden, num_hidden), params, w_ho_name, w_ho)
-  bo_name = add_param((num_hidden, ), params, b_o_name, b_o)
-  wxc_name = add_param((num_in, num_hidden), params, w_xc_name, w_xc)
-  whc_name = add_param((num_hidden, num_hidden), params, w_hc_name, w_hc)
-  bc_name = add_param((num_hidden, ), params, b_c_name, b_c)
+  wxi_name = add_param((num_in, num_hidden), params, w_xi_name or 'lstm_wxi_%d' % len(params), w_xi, w_initializer)
+  whi_name = add_param((num_hidden, num_hidden), params, w_hi_name or 'lstm_whi_%d' % len(params), w_hi, w_initializer)
+  bi_name = add_param((num_hidden, ), params, b_i_name or 'lstm_bi_%d' % len(params), b_i, b_initializer)
+  wxf_name = add_param((num_in, num_hidden), params, w_xf_name or 'lstm_wxf_%d' % len(params), w_xf, w_initializer)
+  whf_name = add_param((num_hidden, num_hidden), params, w_hf_name or 'lstm_whf_%d' % len(params), w_hf, w_initializer)
+  bf_name = add_param((num_hidden, ), params, b_f_name or 'lstm_bf_%d' % len(params), b_f, b_initializer)
+  wxo_name = add_param((num_in, num_hidden), params, w_xo_name or 'lstm_wxo_%d' % len(params), w_xo, w_initializer)
+  who_name = add_param((num_hidden, num_hidden), params, w_ho_name or 'lstm_who_%d' % len(params), w_ho, w_initializer)
+  bo_name = add_param((num_hidden, ), params, b_o_name or 'lstm_bo_%d' % len(params), b_o, b_initializer)
+  wxc_name = add_param((num_in, num_hidden), params, w_xc_name or 'lstm_wxc_%d' % len(params), w_xc, w_initializer)
+  whc_name = add_param((num_hidden, num_hidden), params, w_hc_name or 'lstm_whc_%d' % len(params), w_hc, w_initializer)
+  bc_name = add_param((num_hidden, ), params, b_c_name or 'lstm_bc_%d' % len(params), b_c, b_initializer)
+
+  def _slice(_x, n, dim):
+    if _x.ndim == 3:
+      return _x[:, :, n * dim:(n + 1) * dim]
+    return _x[:, n * dim:(n + 1) * dim]
+
+  wx_concat = T.concatenate((params[wxi_name], params[wxf_name], params[wxo_name], params[wxc_name]), axis=1)
+  wh_concat = T.concatenate((params[whi_name], params[whf_name], params[who_name], params[whc_name]), axis=1)
+  b_concat = T.concatenate((params[bi_name], params[bf_name], params[bo_name], params[bc_name]), axis=0)
 
   # define step function to be used in the loop
   def step(income, hid_prev, cell_prev):
-    i = gate_act(income.dot(params[wxi_name]) + hid_prev.dot(params[whi_name]) + params[bi_name])
-    f = gate_act(income.dot(params[wxf_name]) + hid_prev.dot(params[whf_name]) + params[bf_name])
-    o = gate_act(income.dot(params[wxo_name]) + hid_prev.dot(params[who_name]) + params[bo_name])
-    g = activation(income.dot(params[wxc_name]) + hid_prev.dot(params[whc_name]) + params[bc_name])
-    cell = f * cell_prev + i * g
+    lin_trans = income.dot(wx_concat) + hid_prev.dot(wh_concat) + b_concat
+    i = gate_act(_slice(lin_trans, 0, num_hidden))
+    f = gate_act(_slice(lin_trans, 1, num_hidden))
+    o = gate_act(_slice(lin_trans, 2, num_hidden))
+    c = activation(_slice(lin_trans, 3, num_hidden))
+
+    cell = f * cell_prev + i * c
     hid = o * activation(cell)
     return [hid, cell]
   def step_mask(income, m, hid_prev, cell_prev):
@@ -234,11 +263,13 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
   if mask is not None:
     results, updates = theano.scan(fn=step_mask,
         outputs_info=[hid_init, cell_init],
+        #outputs_info={'initial':[hid_init, cell_init], 'taps':[-1]},
         sequences=[incoming.dimshuffle((1, 0, 2)), mask.dimshuffle(1, 0, 'x')],
         n_steps=incoming.shape[1])
   else:
     results, updates = theano.scan(fn=step,
         outputs_info=[hid_init, cell_init],
+        #outputs_info=[{'initial':[hid_init, cell_init], 'taps':[-1]}],
         sequences=[incoming.dimshuffle((1, 0, 2))],
         n_steps=incoming.shape[1])
   if only_return_final:
@@ -251,15 +282,15 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
     return (hid_state, output_shape)
 
 
-def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None):
+def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initializer=init.HeUniform):
   '''
   input a (batch of) iscalar i, output the corresponding embedding vector, which
   is, the ith row of embedding matrix w.
   num_in is the number of possible inputs (upper bound of i, vocabulary size)
   '''
   incoming, input_shape = incoming
-  output_shape = (input_shape[0], num_out)
+  output_shape = (input_shape[0], input_shape[1], num_out)
 
-  w_name = add_param((num_in, num_out), params, w_name, w)
+  w_name = add_param((num_in, num_out), params, w_name or 'emb_%d' % len(params), w)
 
   return (params[w_name][incoming], output_shape)

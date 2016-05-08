@@ -88,7 +88,7 @@ def rmsprop(cost, incomings, params, options):
   incomings should be a list
   '''
   lr = options.get('lr', 1e-2)
-  dr = options.get('dr', 1e-2) #decay rate
+  dr = options.get('dr', 0.95) #decay rate
   epsilon = options.get('epsilon', 1e-8)
 
   grads = T.grad(cost, params.values())

@@ -2,6 +2,7 @@
 Part of this code is from theano tutorial:
   http://deeplearning.net/tutorial/lstm.html
 '''
+import copy
 from collections import OrderedDict
 import sys
 import time
@@ -17,10 +18,13 @@ from neuralcraft import layers, optimizers, utils
 
 import imdb
 
-datasets = {'imdb': (imdb.load_data, imdb.prepare_data)}
+def prepare_data_sp(x, y, maxlen=None):
+  x, mask, y = imdb.prepare_data(x, y, maxlen)
+  return (x.transpose(), mask.transpose(), y)
+datasets = {'imdb': (imdb.load_data, prepare_data_sp)}
 
 # Set the random number generators' seeds for consistency
-SEED = 123
+SEED = 1234
 np.random.seed(SEED)
 
 def get_minibatches_idx(n, minibatch_size, shuffle=False):
@@ -50,7 +54,7 @@ def get_minibatches_idx(n, minibatch_size, shuffle=False):
 def get_dataset(name):
     return datasets[name][0], datasets[name][1]
 
-def build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_dropout=True, optimizer=optimizers.sgd):
+def build_model(n_words, encoder, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_dropout=True, optimizer=optimizers.sgd):
   trng = RandomStreams(SEED)
 
   # by using shared variable, we can control whether to use noise without recompiling
@@ -65,17 +69,52 @@ def build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_d
 
   net = {}
   params = {}
-  net['emb'] = layers.EmbeddingLayer((x, xshape), params, n_words, dim_proj)
-  net['lstm'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask)
 
-  net['mean_pool'] = net['lstm'][0].sum(axis=0) / mask.sum(axis=0)[:, None].astype(theano.config.floatX) #why /mask.sum?
-  net['mean_pool'] = (net['mean_pool'], net['lstm'][1][1:])
+  def init_emb(shape):
+    num_in, num_out = shape
+    randn = np.random.rand(num_in, num_out)
+    return utils.cast_floatX(0.01 * randn)
+  fc_winit = init_emb
+  def ortho_weight(shape):
+    ndim = shape[0]
+    assert shape[0] == shape[1]
+    W = np.random.randn(ndim, ndim)
+    u, s, v = np.linalg.svd(W)
+    return utils.cast_floatX(u)
+
+  net['emb'] = layers.EmbeddingLayer((x, xshape), params, n_words, dim_proj, initializer=init_emb)
+  if encoder == 'lstm':
+    net['encoder'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask, w_initializer=ortho_weight)
+    '''
+    shape = (dim_proj, num_hidden)
+    net['encoder'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask,
+        w_xi=ortho_weight(shape), w_hi=ortho_weight(shape),
+        w_xf=ortho_weight(shape), w_hf=ortho_weight(shape),
+        w_xo=ortho_weight(shape), w_ho=ortho_weight(shape),
+        w_xc=ortho_weight(shape), w_hc=ortho_weight(shape),
+        )
+        '''
+  elif encoder == 'rnn':
+    net['encoder'] = layers.RNNLayer(net['emb'], 0., params, num_hidden, mask, w_initializer=ortho_weight)
+
+  net['mean_pool'] = (net['encoder'][0] * mask.dimshuffle((0, 1, 'x'))).sum(axis=1) / mask.sum(axis=1)[:, None].astype(theano.config.floatX) #mean pool. multiplied by mask to remove "EOS noise"
+  encoder_shape = list(net['encoder'][1])
+  net['mean_pool'] = (net['mean_pool'], [encoder_shape[0]] + encoder_shape[2:])
   if(use_dropout):
     net['dropout'] = layers.dropoutLayer(net['mean_pool'], use_noise, trng, p_dropout)
 
-  pred = layers.FCLayer(net['dropout'], params, 2, activation=T.nnet.softmax, w_name='U')[0]
+  pred, pred_shape = layers.FCLayer(net['dropout'], params, 2, activation=T.nnet.softmax, w_name='U', w_initializer=fc_winit)
+  encoder = theano.function([x, mask], net['encoder'][0], name='encoder', allow_input_downcast=True)
+  mean_pool = theano.function([x, mask], net['mean_pool'][0], name='mean_pool', allow_input_downcast=True)
 
-  cost = T.nnet.categorical_crossentropy(pred, y).mean()
+  off = 1e-8
+  #off = 0
+  #cost = (T.nnet.categorical_crossentropy(pred, y)).mean() #correct
+  n_samples = x.shape[0]
+  cost = -T.log(pred[T.arange(n_samples), y] + off).mean()
+  #cost_arr0 = T.nnet.categorical_crossentropy(pred, y)
+  #cost_arr1 = -T.log(pred[T.arange(n_samples), y] + off)
+  #n_samples = x.shape[0]
   if decay_c > 0:
     weight_decay = decay_c * (params['U'] ** 2).sum()
     cost += weight_decay
@@ -86,6 +125,14 @@ def build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, use_d
   opt = optimizer(cost, [x, mask, y], params, options=options)
   #opt = theano.function([x, mask, y], cost, allow_input_downcast=True)
 
+  '''
+  f_emb = theano.function([x], net['emb'][0], allow_input_downcast=True)
+  f_encoder = theano.function([x, mask], net['encoder'][0], allow_input_downcast=True)
+  f_dp = theano.function([x, mask], net['dropout'][0], allow_input_downcast=True)
+  cost_arr0 = theano.function([x, mask, y], cost_arr0, allow_input_downcast=True)
+  cost_arr1 = theano.function([x, mask, y], cost_arr1, allow_input_downcast=True)
+  return f_pred_prob, f_pred, opt, params, use_noise, (f_emb, f_encoder, f_dp, cost_arr0, cost_arr1)
+  '''
   return f_pred_prob, f_pred, opt, params, use_noise
 
 
@@ -97,12 +144,16 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
   """
   valid_err = 0
   for _, valid_index in iterator:
-      x, mask, y = prepare_data([data[0][t] for t in valid_index],
-                                np.array(data[1])[valid_index],
-                                maxlen=None)
-      preds = f_pred(x, mask)
-      targets = np.array(data[1])[valid_index]
-      valid_err += (preds == targets).sum()
+    x, mask, y = prepare_data([data[0][t] for t in valid_index],
+                              np.array(data[1])[valid_index],
+                              maxlen=None)
+    preds = f_pred(x, mask)
+    targets = np.array(data[1])[valid_index]
+    valid_err += (preds == targets).sum()
+  print '-' * 80
+  print preds
+  print '-'*40
+  print targets
   valid_err = 1. - utils.cast_floatX(valid_err) / len(data[0])
 
   return valid_err
@@ -118,7 +169,7 @@ def train_lstm(
     n_words=10000,  # Vocabulary size
     optimizer=optimizers.rmsprop,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
     encoder='lstm',  # TODO: can be removed must be lstm.
-    saveto='lstm_model.pkl',  # The best model will be saved there
+    saveto='stack-lstm_model.pkl',  # The best model will be saved there
     validFreq=370,  # Compute the validation error after this number of update.
     saveFreq=1110,  # Save the parameters after every saveFreq updates
     maxlen=100,  # Sequence longer then this get ignored
@@ -137,6 +188,8 @@ def train_lstm(
   load_data, prepare_data = get_dataset(dataset)
   train, valid, test = load_data(n_words=n_words, valid_portion=0.05,
                                  maxlen=maxlen)
+  #train = (train[0][:10], train[1][:10])
+
   if test_size > 0:
     # The test set is sorted by size, but we want to keep random
     # size example.  So we must select a random selection of the
@@ -147,7 +200,8 @@ def train_lstm(
     test = ([test[0][n] for n in idx], [test[1][n] for n in idx])
 
   print('Building model')
-  f_pred_prob, f_pred, optimizer, params, use_noise = build_model(n_words, dim_proj, num_hidden, p_dropout, maxlen, decay_c, optimizer)
+  #f_pred_prob, f_pred, optimizer, params, use_noise, package = build_model(n_words, encoder, dim_proj, num_hidden, p_dropout, maxlen, decay_c, optimizer)
+  f_pred_prob, f_pred, optimizer, params, use_noise = build_model(n_words, encoder, dim_proj, num_hidden, p_dropout, maxlen, decay_c, optimizer)
   use_noise.set_value(1.)
 
   print('Optimization')
@@ -160,8 +214,18 @@ def train_lstm(
   print("%d test examples" % len(test[0]))
 
   history_errs = []
-  bad_count = 0
+  bad_counter = 0
   uidx = 0
+
+  params_prev = None
+  def compare_params(params, params_prev):
+    m = True
+    for p, pp in zip(params.values(), params_prev.values()):
+      if p != pp:
+        m = False
+        break
+    return m
+
   for eidx in range(max_epochs):
     print 'start epoch %d' % eidx
     kf = get_minibatches_idx(len(train[0]), batch_size, shuffle=True)
@@ -179,21 +243,37 @@ def train_lstm(
       # This swap the axis!
       # Return something of shape (minibatch maxlen, n samples)
       x, mask, y = prepare_data(x, y)
-      #n_samples += x.shape[1]
       count += 1
 
+      '''
+      print('-'*80)
+      f_emb, f_enc, f_dp, cost_arr0, cost_arr1 = package
+      print(f_emb(x).shape)
+      print(f_enc(x, mask).shape)
+      print(f_dp(x, mask).shape)
+      print(f_pred_prob(x, mask).shape)
+      print cost_arr0(x, mask, y)
+      print cost_arr1(x, mask, y)
+      prob = f_pred_prob(x, mask)
+      #off = 1e-8
+      #print("%.20f"%(- np.log(prob[range(prob.shape[0]), y] + off).mean()))
+      '''
+
       cost = optimizer(x, mask, y, lrate)
+      #print("%.20f"%cost)
       #cost = optimizer(x, mask, y)
       cost_acc += cost
       #print cost
       uidx += 1
+
       if uidx % dispFreq == 0:
-        print "Epochs: %d, Updates: %d, Cost: %f" % (eidx, uidx, cost)
+        print "Epochs: %d, Updates: %d, Cost: %.9f" % (eidx, uidx, cost)
       if saveto and np.mod(uidx, saveFreq) == 0:
         print 'Saving to...'
         utils.save_params(saveto, params)
 
       if uidx % validFreq == 0:
+        print params.values()[0].get_value()
         use_noise.set_value(0.)
         train_err = pred_error(f_pred, prepare_data, train, kf)
         valid_err = pred_error(f_pred, prepare_data, valid,
@@ -220,7 +300,10 @@ def train_lstm(
 if __name__ == '__main__':
   # See function train for all possible parameter and there definition.
   train_lstm(
-      max_epochs=100,
+      #max_epochs=100,
       test_size=500,
       optimizer=optimizers.rmsprop,
+      #encoder='rnn',
+      #validFreq=20,
+      lrate=0.1
   )

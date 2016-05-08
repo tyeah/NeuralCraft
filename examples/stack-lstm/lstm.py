@@ -17,6 +17,9 @@ from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 import imdb
 
+
+from neuralcraft import optimizers
+
 datasets = {'imdb': (imdb.load_data, imdb.prepare_data)}
 
 # Set the random number generators' seeds for consistency
@@ -400,7 +403,10 @@ def build_model(tparams, options):
 
     cost = -tensor.log(pred[tensor.arange(n_samples), y] + off).mean()
 
-    return use_noise, x, mask, y, f_pred_prob, f_pred, cost
+    tparams_dict = dict(tparams)
+    opt = optimizers.rmsprop(cost, [x, mask, y], tparams_dict, options={'lr':tensor.scalar()})
+
+    return use_noise, x, mask, y, f_pred_prob, f_pred, cost, opt
 
 
 def pred_probs(f_pred_prob, prepare_data, data, iterator, verbose=False):
@@ -441,6 +447,10 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
         targets = numpy.array(data[1])[valid_index]
         valid_err += (preds == targets).sum()
     valid_err = 1. - numpy_floatX(valid_err) / len(data[0])
+    print('-' * 80)
+    print(preds)
+    print('-'*40)
+    print(targets)
 
     return valid_err
 
@@ -508,7 +518,7 @@ def train_lstm(
 
     # use_noise is for dropout
     (use_noise, x, mask,
-     y, f_pred_prob, f_pred, cost) = build_model(tparams, model_options)
+     y, f_pred_prob, f_pred, cost, optim) = build_model(tparams, model_options)
 
     if decay_c > 0.:
         decay_c = theano.shared(numpy_floatX(decay_c), name='decay_c')
@@ -568,8 +578,15 @@ def train_lstm(
                 x, mask, y = prepare_data(x, y)
                 n_samples += x.shape[1]
 
-                cost = f_grad_shared(x, mask, y)
-                f_update(lrate)
+                #cost = f_grad_shared(x, mask, y)
+                #f_update(lrate)
+                '''
+                prob = f_pred_prob(x, mask)
+                off = 1e-8
+                print("%.20f"%(- numpy.log(prob[range(prob.shape[0]), y] + off).mean()))
+                '''
+                cost = optim(x, mask, y, lrate)
+                #print(cost)
 
                 if numpy.isnan(cost) or numpy.isinf(cost):
                     print('bad cost detected: ', cost)
@@ -590,6 +607,7 @@ def train_lstm(
                     print('Done')
 
                 if numpy.mod(uidx, validFreq) == 0:
+                    print(tparams['b'].get_value())
                     use_noise.set_value(0.)
                     train_err = pred_error(f_pred, prepare_data, train, kf)
                     valid_err = pred_error(f_pred, prepare_data, valid,
@@ -654,4 +672,5 @@ if __name__ == '__main__':
     train_lstm(
         max_epochs=100,
         test_size=500,
+        #validFreq=20
     )
