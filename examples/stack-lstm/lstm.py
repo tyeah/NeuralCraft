@@ -18,7 +18,7 @@ from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 import imdb
 
 
-from neuralcraft import optimizers
+from neuralcraft import optimizers, init, utils
 
 datasets = {'imdb': (imdb.load_data, imdb.prepare_data)}
 
@@ -94,17 +94,27 @@ def init_params(options):
     """
     Global (not LSTM) parameter. For the embeding and the classifier.
     """
+    def init_emb(shape):
+      num_in, num_out = shape
+      randn = numpy.random.rand(num_in, num_out)
+      return utils.cast_floatX(0.01 * randn)
+    fc_winit = init_emb
+
     params = OrderedDict()
     # embedding
     randn = numpy.random.rand(options['n_words'],
                               options['dim_proj'])
-    params['Wemb'] = (0.01 * randn).astype(config.floatX)
+    #params['Wemb'] = (0.01 * randn).astype(config.floatX)
+    params['Wemb'] = init_emb((options['n_words'], options['dim_proj']))
     params = get_layer(options['encoder'])[0](options,
                                               params,
                                               prefix=options['encoder'])
     # classifier
+    '''
     params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
                                             options['ydim']).astype(config.floatX)
+                                            '''
+    params['U'] = fc_winit((options['dim_proj'], options['ydim']))
     params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
 
     return params
@@ -144,18 +154,36 @@ def param_init_lstm(options, params, prefix='lstm'):
 
     :see: init_params
     """
+    '''
     W = numpy.concatenate([ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj'])], axis=1)
-    params[_p(prefix, 'W')] = W
     U = numpy.concatenate([ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj']),
                            ortho_weight(options['dim_proj'])], axis=1)
-    params[_p(prefix, 'U')] = U
     b = numpy.zeros((4 * options['dim_proj'],))
+    params[_p(prefix, 'W')] = W
+    params[_p(prefix, 'U')] = U
     params[_p(prefix, 'b')] = b.astype(config.floatX)
+    '''
+    options['num_hidden'] = options['dim_proj']
+    num_hidden = options['dim_proj']
+    shape_x = (options['dim_proj'], options['num_hidden'])
+    shape_h = (options['num_hidden'], options['num_hidden'])
+    w_xi, w_hi, b_i = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+    w_xf, w_hf, b_f = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+    w_xo, w_ho, b_o = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+    w_xc, w_hc, b_c = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+    print(w_xc[10:, 0])
+    W = numpy.concatenate([w_xi, w_xf, w_xo, w_xc], axis=1).astype(config.floatX)
+    U = numpy.concatenate([w_hi, w_hf, w_ho, w_hc], axis=1).astype(config.floatX)
+    b = numpy.concatenate([b_i, b_f, b_o, b_c], axis=0)
+    print(W.dtype, U.dtype, b.dtype)
+    params[_p(prefix, 'W')] = W
+    params[_p(prefix, 'U')] = U
+    params[_p(prefix, 'b')] = b
 
     return params
 
@@ -635,6 +663,7 @@ def train_lstm(
                             estop = True
                             break
 
+            print "Average cost for epoch %d: %f" % (eidx, cost_acc / count)
             print('Seen %d samples' % n_samples)
 
             if estop:

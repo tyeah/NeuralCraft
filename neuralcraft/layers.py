@@ -8,9 +8,6 @@ when defining a net, alwayse use 1 as batch_size, which will not influence the a
 #TODO: Use astype to define shared variable is problem prone. Fix? Always pass float32 to define?
 #TODO: add bias term in conv
 #TODO: add init module
-#TODO: check if rnn and lstm is wrong
-#TODO: change lstm to do matrix mul at once
-#TODO: INITIALIZE
 #TODO: GRAD_CLIP
 import theano
 from theano import tensor as T
@@ -34,7 +31,7 @@ def w_initializer(shape):
   '''
 b_initializer = lambda shape: cast_floatX(np.zeros(shape))
 
-def add_param(shape, params, name=None, val=None, initializer=init.HeUniform):
+def add_param(shape, params, name=None, val=None, initializer=init.HeUniform()):
   if name is None:
     name = name_suf(name, '_%d' % len(params))
   if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
@@ -56,7 +53,7 @@ def add_param(shape, params, name=None, val=None, initializer=init.HeUniform):
 
 def FCLayer(incoming, params, num_out, activation=nnet.relu, 
     w_name=None, b_name=None, w=None, b=None, 
-    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
+    w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
   incoming, input_shape = incoming
   num_in = np.prod(input_shape[1:])
 
@@ -67,12 +64,12 @@ def FCLayer(incoming, params, num_out, activation=nnet.relu,
   b_name = add_param((num_out,), params, b_name, b, b_initializer)
   if incoming.ndim > 2:
     incoming = incoming.flatten(2)
-  return (activation(incoming.dot(params[w_name]) + params[b_name]), output_shape)
+  return (activation(T.dot(incoming, params[w_name]) + params[b_name]), output_shape)
 
 
 def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None, filter_name=None,
     stride_h=None, stride_w=None, padding='half', activation=nnet.relu,
-    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
+    w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
   '''
   incoming shoule be a tensor4: (batch_size, channel_size, height, width)
   filter should be None or ndarray or shared
@@ -155,7 +152,7 @@ def poolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, paddin
 
 def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.relu, only_return_final=False,
     w_xh_name=None, w_hh_name=None, b_name=None, w_xh=None, w_hh=None, b=None,
-    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
+    w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
   incoming, input_shape = incoming
   num_in = input_shape[-1]
 
@@ -193,12 +190,99 @@ def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.
     return (results.dimshuffle((1, 0, 2)), output_shape)
 
 
+def LSTMLayer_seqfirst(incoming, cell_init, hid_init, params, num_hidden, mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False,
+    w_xi_name=None, w_hi_name=None, b_i_name=None, w_xi=None, w_hi=None, b_i=None,
+    w_xf_name=None, w_hf_name=None, b_f_name=None, w_xf=None, w_hf=None, b_f=None,
+    w_xo_name=None, w_ho_name=None, b_o_name=None, w_xo=None, w_ho=None, b_o=None,
+    w_xc_name=None, w_hc_name=None, b_c_name=None, w_xc=None, w_hc=None, b_c=None,
+    w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
+  '''
+  hid_init and cell_init can be a number, an array or a tensor expression
+  '''
+  incoming, input_shape = incoming
+  num_in = input_shape[-1]
+
+  # add parameters
+  wxi_name = add_param((num_in, num_hidden), params, w_xi_name or 'lstm_wxi_%d' % len(params), w_xi, w_initializer)
+  whi_name = add_param((num_hidden, num_hidden), params, w_hi_name or 'lstm_whi_%d' % len(params), w_hi, w_initializer)
+  bi_name = add_param((num_hidden, ), params, b_i_name or 'lstm_bi_%d' % len(params), b_i, b_initializer)
+  wxf_name = add_param((num_in, num_hidden), params, w_xf_name or 'lstm_wxf_%d' % len(params), w_xf, w_initializer)
+  whf_name = add_param((num_hidden, num_hidden), params, w_hf_name or 'lstm_whf_%d' % len(params), w_hf, w_initializer)
+  bf_name = add_param((num_hidden, ), params, b_f_name or 'lstm_bf_%d' % len(params), b_f, b_initializer)
+  wxo_name = add_param((num_in, num_hidden), params, w_xo_name or 'lstm_wxo_%d' % len(params), w_xo, w_initializer)
+  who_name = add_param((num_hidden, num_hidden), params, w_ho_name or 'lstm_who_%d' % len(params), w_ho, w_initializer)
+  bo_name = add_param((num_hidden, ), params, b_o_name or 'lstm_bo_%d' % len(params), b_o, b_initializer)
+  wxc_name = add_param((num_in, num_hidden), params, w_xc_name or 'lstm_wxc_%d' % len(params), w_xc, w_initializer)
+  whc_name = add_param((num_hidden, num_hidden), params, w_hc_name or 'lstm_whc_%d' % len(params), w_hc, w_initializer)
+  bc_name = add_param((num_hidden, ), params, b_c_name or 'lstm_bc_%d' % len(params), b_c, b_initializer)
+
+  def _slice(_x, n, dim):
+    if _x.ndim == 3:
+      return _x[:, :, n * dim:(n + 1) * dim]
+    return _x[:, n * dim:(n + 1) * dim]
+
+  wx_concat = T.concatenate((params[wxi_name], params[wxf_name], params[wxo_name], params[wxc_name]), axis=1)
+  wh_concat = T.concatenate((params[whi_name], params[whf_name], params[who_name], params[whc_name]), axis=1)
+  b_concat = T.concatenate((params[bi_name], params[bf_name], params[bo_name], params[bc_name]), axis=0)
+
+  # define step function to be used in the loop
+  def step(income, hid_prev, cell_prev):
+    lin_trans = income.dot(wx_concat) + hid_prev.dot(wh_concat) + b_concat
+    i = gate_act(_slice(lin_trans, 0, num_hidden))
+    f = gate_act(_slice(lin_trans, 1, num_hidden))
+    o = gate_act(_slice(lin_trans, 2, num_hidden))
+    c = activation(_slice(lin_trans, 3, num_hidden))
+
+    cell = f * cell_prev + i * c
+    hid = o * activation(cell)
+    return [hid, cell]
+  def step_mask(income, m, hid_prev, cell_prev):
+    hid, cell = step(income, hid_prev, cell_prev)
+    hid = T.switch(m, hid, hid_prev)
+    cell = T.switch(m, cell, cell_prev)
+    return [hid, cell]
+
+  # setup hid_init and cell_init
+  if isinstance(hid_init, int) or isinstance(hid_init, float):
+    hid_init = hid_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(hid_init, np.ndarray):
+    assert hid_init.shape == (num_hidden, )
+    hid_init = np.array(hid_init, dtype=theano.config.floatX)
+    hid_init = hid_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(cell_init, int) or isinstance(cell_init, float):
+    cell_init = cell_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(cell_init, np.ndarray):
+    assert cell_init.shape == (num_hidden, )
+    cell_init = np.array(cell_init, dtype=theano.config.floatX)
+    cell_init = cell_init * T.ones((incoming.shape[1], num_hidden))
+
+  # compose loop
+  if mask is not None:
+    results, updates = theano.scan(fn=step_mask,
+        outputs_info=[hid_init, cell_init],
+        #outputs_info={'initial':[hid_init, cell_init], 'taps':[-1]},
+        sequences=[incoming, mask.dimshuffle(0, 1, 'x')])
+  else:
+    results, updates = theano.scan(fn=step,
+        outputs_info=[hid_init, cell_init],
+        #outputs_info=[{'initial':[hid_init, cell_init], 'taps':[-1]}],
+        sequences=[incoming])
+  if only_return_final:
+    output_shape = (input_shape[0], num_hidden)
+    return (results[0][-1], output_shape)
+  else:
+    output_shape = (input_shape[0], input_shape[1], num_hidden)
+    #cell_stat = results[1].dimshuffle((1, 0, 2))
+    hid_state = results[0]
+    return (hid_state, output_shape)
+
+
 def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False,
     w_xi_name=None, w_hi_name=None, b_i_name=None, w_xi=None, w_hi=None, b_i=None,
     w_xf_name=None, w_hf_name=None, b_f_name=None, w_xf=None, w_hf=None, b_f=None,
     w_xo_name=None, w_ho_name=None, b_o_name=None, w_xo=None, w_ho=None, b_o=None,
     w_xc_name=None, w_hc_name=None, b_c_name=None, w_xc=None, w_hc=None, b_c=None,
-    w_initializer=init.HeUniform, b_initializer=init.Const(0.)):
+    w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
   '''
   hid_init and cell_init can be a number, an array or a tensor expression
   '''
@@ -264,14 +348,12 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
     results, updates = theano.scan(fn=step_mask,
         outputs_info=[hid_init, cell_init],
         #outputs_info={'initial':[hid_init, cell_init], 'taps':[-1]},
-        sequences=[incoming.dimshuffle((1, 0, 2)), mask.dimshuffle(1, 0, 'x')],
-        n_steps=incoming.shape[1])
+        sequences=[incoming.dimshuffle((1, 0, 2)), mask.dimshuffle(1, 0, 'x')])
   else:
     results, updates = theano.scan(fn=step,
         outputs_info=[hid_init, cell_init],
         #outputs_info=[{'initial':[hid_init, cell_init], 'taps':[-1]}],
-        sequences=[incoming.dimshuffle((1, 0, 2))],
-        n_steps=incoming.shape[1])
+        sequences=[incoming.dimshuffle((1, 0, 2))])
   if only_return_final:
     output_shape = (input_shape[0], num_hidden)
     return (results[0][-1], output_shape)
@@ -282,7 +364,7 @@ def LSTMLayer(incoming, cell_init, hid_init, params, num_hidden, mask=None, acti
     return (hid_state, output_shape)
 
 
-def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initializer=init.HeUniform):
+def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initializer=init.HeUniform()):
   '''
   input a (batch of) iscalar i, output the corresponding embedding vector, which
   is, the ith row of embedding matrix w.
@@ -291,6 +373,8 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initi
   incoming, input_shape = incoming
   output_shape = (input_shape[0], input_shape[1], num_out)
 
-  w_name = add_param((num_in, num_out), params, w_name or 'emb_%d' % len(params), w)
+  w_name = add_param((num_in, num_out), params, w_name or 'emb_%d' % len(params), w, initializer)
 
   return (params[w_name][incoming], output_shape)
+  #return (params[w_name][incoming.flatten()].reshape([
+    #incoming.shape[0], incoming.shape[1], num_out]), output_shape)

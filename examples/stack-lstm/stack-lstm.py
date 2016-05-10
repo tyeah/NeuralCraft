@@ -14,7 +14,7 @@ from theano import config
 import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-from neuralcraft import layers, optimizers, utils
+from neuralcraft import layers, optimizers, utils, init
 
 import imdb
 
@@ -82,28 +82,43 @@ def build_model(n_words, encoder, dim_proj, num_hidden, p_dropout, maxlen, decay
     u, s, v = np.linalg.svd(W)
     return utils.cast_floatX(u)
 
-  net['emb'] = layers.EmbeddingLayer((x, xshape), params, n_words, dim_proj, initializer=init_emb)
+  '''
+  generate weights
+  '''
+  w_emb = init_emb((n_words, dim_proj))
+  shape_x = (dim_proj, num_hidden)
+  shape_h = (num_hidden, num_hidden)
+  w_xi, w_hi, b_i = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+  w_xf, w_hf, b_f = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+  w_xo, w_ho, b_o = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+  w_xc, w_hc, b_c = init.Orth().sample(shape_x), init.Orth().sample(shape_h), init.Const().sample(num_hidden)
+  print(w_xc[10:, 0])
+  w_fc = fc_winit((num_hidden, 2))
+
+  net['emb'] = layers.EmbeddingLayer((x, xshape), params, n_words, dim_proj, w=w_emb)
   if encoder == 'lstm':
-    net['encoder'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask, w_initializer=ortho_weight)
     '''
-    shape = (dim_proj, num_hidden)
+    net['encoder'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask, w_initializer=init.Orth())
+    '''
     net['encoder'] = layers.LSTMLayer(net['emb'], 0., 0., params, num_hidden, mask,
-        w_xi=ortho_weight(shape), w_hi=ortho_weight(shape),
-        w_xf=ortho_weight(shape), w_hf=ortho_weight(shape),
-        w_xo=ortho_weight(shape), w_ho=ortho_weight(shape),
-        w_xc=ortho_weight(shape), w_hc=ortho_weight(shape),
+        w_xi=w_xi, w_hi=w_hi, b_i=b_i,
+        w_xf=w_xf, w_hf=w_hf, b_f=b_f,
+        w_xo=w_xo, w_ho=w_ho, b_o=b_o,
+        w_xc=w_xc, w_hc=w_hc, b_c=b_c,
         )
-        '''
   elif encoder == 'rnn':
     net['encoder'] = layers.RNNLayer(net['emb'], 0., params, num_hidden, mask, w_initializer=ortho_weight)
 
-  net['mean_pool'] = (net['encoder'][0] * mask.dimshuffle((0, 1, 'x'))).sum(axis=1) / mask.sum(axis=1)[:, None].astype(theano.config.floatX) #mean pool. multiplied by mask to remove "EOS noise"
+  net['mean_pool'] = (net['encoder'][0] * mask[:, :, None]).sum(axis=1) / mask.sum(axis=1)[:, None].astype(theano.config.floatX) #mean pool. multiplied by mask to remove "EOS noise"
   encoder_shape = list(net['encoder'][1])
   net['mean_pool'] = (net['mean_pool'], [encoder_shape[0]] + encoder_shape[2:])
   if(use_dropout):
     net['dropout'] = layers.dropoutLayer(net['mean_pool'], use_noise, trng, p_dropout)
 
-  pred, pred_shape = layers.FCLayer(net['dropout'], params, 2, activation=T.nnet.softmax, w_name='U', w_initializer=fc_winit)
+  #pred, pred_shape = layers.FCLayer(net['dropout'], params, 2, activation=T.nnet.softmax, w_name='U', w=w_fc)
+  params['w_fc'] = theano.shared(w_fc)
+  params['b_fc'] = theano.shared(utils.cast_floatX(np.zeros(2)))
+  pred = T.nnet.softmax(T.dot(net['dropout'][0], params['w_fc']) + params['b_fc'])
   encoder = theano.function([x, mask], net['encoder'][0], name='encoder', allow_input_downcast=True)
   mean_pool = theano.function([x, mask], net['mean_pool'][0], name='mean_pool', allow_input_downcast=True)
 

@@ -80,3 +80,19 @@ class HeGaussian(He):
 class HeUniform(He):
   def __init__(self, gain=1.0, c01b=False):
     super(HeUniform, self).__init__(Uniform, gain, c01b)
+
+
+class Orth(Initializer):
+  def __init__(self, gain=1.0):
+    if gain == 'relu':
+      gain = np.sqrt(2)
+    self.gain = gain
+
+  def sample(self, shape):
+    assert len(shape) >= 2, 'shape must have length >= 2'
+    flat_shape = (shape[0], np.prod(shape[1:]))
+    a = np.random.randn(*flat_shape)
+    u, _, v = np.linalg.svd(a, full_matrices=False)
+    q = u if u.shape == flat_shape else v
+    q = q.reshape(shape)
+    return q
