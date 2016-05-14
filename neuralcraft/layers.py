@@ -190,6 +190,93 @@ def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.
     return (results.dimshuffle((1, 0, 2)), output_shape)
 
 
+def LSTMLayer_seqfirst_lisa(incoming, cell_init, hid_init, params, num_hidden, 
+    W, U, b, W_name='lstm_W', U_name='lstm_U', b_name='lstm_b',
+    mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False):
+  '''
+  hid_init and cell_init can be a number, an array or a tensor expression
+  '''
+  incoming, input_shape = incoming
+  num_in = input_shape[-1]
+
+  # add parameters
+  W_name = add_param((num_in, 4 * num_hidden), params, W_name, W)
+  U_name = add_param((num_hidden, 4 * num_hidden), params, U_name, U)
+  b_name = add_param((4 * num_hidden, ), params, b_name, b)
+
+  def _slice(_x, n, dim):
+    if _x.ndim == 3:
+      return _x[:, :, n * dim:(n + 1) * dim]
+    return _x[:, n * dim:(n + 1) * dim]
+
+  # define step function to be used in the loop
+  def _step(m_, x_, h_, c_):
+    preact = T.dot(h_, params[U_name])
+    preact += x_
+
+    i = T.nnet.sigmoid(_slice(preact, 0, num_hidden))
+    f = T.nnet.sigmoid(_slice(preact, 1, num_hidden))
+    o = T.nnet.sigmoid(_slice(preact, 2, num_hidden))
+    c = T.tanh(_slice(preact, 3, num_hidden))
+
+    c = f * c_ + i * c
+
+    h = o * T.tanh(c)
+
+    return h, c
+
+  def _step_mask(m_, x_, h_, c_):
+    preact = T.dot(h_, params[U_name])
+    preact += x_
+
+    i = T.nnet.sigmoid(_slice(preact, 0, num_hidden))
+    f = T.nnet.sigmoid(_slice(preact, 1, num_hidden))
+    o = T.nnet.sigmoid(_slice(preact, 2, num_hidden))
+    c = T.tanh(_slice(preact, 3, num_hidden))
+
+    c = f * c_ + i * c
+    c = m_[:, None] * c + (1. - m_)[:, None] * c_
+
+    h = o * T.tanh(c)
+    h = m_[:, None] * h + (1. - m_)[:, None] * h_
+
+    return h, c
+
+  # setup hid_init and cell_init
+  if isinstance(hid_init, int) or isinstance(hid_init, float):
+    hid_init = hid_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(hid_init, np.ndarray):
+    assert hid_init.shape == (num_hidden, )
+    hid_init = np.array(hid_init, dtype=theano.config.floatX)
+    hid_init = hid_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(cell_init, int) or isinstance(cell_init, float):
+    cell_init = cell_init * T.ones((incoming.shape[1], num_hidden))
+  if isinstance(cell_init, np.ndarray):
+    assert cell_init.shape == (num_hidden, )
+    cell_init = np.array(cell_init, dtype=theano.config.floatX)
+    cell_init = cell_init * T.ones((incoming.shape[1], num_hidden))
+
+  incoming = (T.dot(incoming, params[W_name]) + params[b_name])
+
+  # compose loop
+  if mask is not None:
+    results, updates = theano.scan(fn=_step_mask,
+        outputs_info=[hid_init, cell_init],
+        sequences=[mask, incoming])
+  else:
+    results, updates = theano.scan(fn=_step,
+        outputs_info=[hid_init, cell_init],
+        sequences=[incoming])
+  if only_return_final:
+    output_shape = (input_shape[0], num_hidden)
+    return (results[0][-1], output_shape)
+  else:
+    output_shape = (input_shape[0], input_shape[1], num_hidden)
+    #cell_stat = results[1].dimshuffle((1, 0, 2))
+    hid_state = results[0]
+    return (hid_state, output_shape)
+
+
 def LSTMLayer_seqfirst(incoming, cell_init, hid_init, params, num_hidden, mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False,
     w_xi_name=None, w_hi_name=None, b_i_name=None, w_xi=None, w_hi=None, b_i=None,
     w_xf_name=None, w_hf_name=None, b_f_name=None, w_xf=None, w_hf=None, b_f=None,
