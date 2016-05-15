@@ -88,6 +88,7 @@ class experiment(object):
       if iter_idx % iters_in_epoch == 0:
         print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc / iters_in_epoch)
         epoch_idx += 1
+        cost_acc = 0
         if epoch_idx >= max_epoch:
           break
 
