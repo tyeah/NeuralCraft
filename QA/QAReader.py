@@ -64,8 +64,8 @@ class QAReader:
         story = None
 
         word_counter = Counter()
-        self.index_to_word = []
-        self.word_to_index = {}
+        self.index_to_word = ['NULL', 'EOS']
+        self.word_to_index = {'NULL': 0, 'EOS': 1}
         with open(filename, 'r') as file:
             self.stories = []
             for line in file:
