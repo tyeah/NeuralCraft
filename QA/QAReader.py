@@ -81,6 +81,7 @@ class QAReader:
                     question, answer, evidences = string.split('\t')
                     question = segmenter(question)
                     word_counter.update(question)
+                    word_counter[answer] += 1
                     quest = Question(question, answer, self.word_to_index)
                     for evid in map(int, evidences.split()):
                         quest.evidences.append(context_id_mapping[evid])
