@@ -56,9 +56,13 @@ class QAReader:
     """
     def __init__(self, filename,
                  threshold=3,
-                 segmenter=QAReader.segment):
+                 segmenter=None):
+        if not segmenter:
+            segmenter = self.segment
+
         splitter = re.compile('(\d+) (.+)')
         story = None
+
         word_counter = Counter()
         self.index_to_word = []
         self.word_to_index = {}
@@ -97,7 +101,6 @@ class QAReader:
                     self.index_to_word.append(word)
             self.word_to_index['<UNKNOWN>'] = len(self.index_to_word)
             self.index_to_word.append('<UNKNOWN>')
-
 
     @staticmethod
     def segment(sent):
