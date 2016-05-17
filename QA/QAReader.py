@@ -1,13 +1,16 @@
 import re
 from collections import Counter
 
+def getIfExists(dictionary, key):
+    return dictionary.get(key, dictionary['<UNKNOWN>'])
+
 class Context:
     def __init__(self, string, dictionary):
         self.string = string
         self.dictionary = dictionary
 
     def toIndex(self):
-        return [self.dictionary[w] for w in self.string]
+        return [getIfExists(self.dictionary, w) for w in self.string]
 
     def __repr__(self):
         return ' '.join(self.string)
@@ -20,8 +23,9 @@ class Question:
         self.dictionary = dictionary
 
     def toIndex(self):
-        return {'question': [self.dictionary[w] for w in self.question],
-                'answer': self.dictionary[self.answer] }
+        return {'question': [getIfExists(self.dictionary, w)
+                for w in self.question],
+                'answer': getIfExists(self.dictionary, self.answer) }
 
     def __repr__(self):
         return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(' '.join(self.question), self.answer, str(self.evidences))
@@ -53,10 +57,20 @@ class QAReader:
     The words are indexed in alphabetical order, also for generality, a threshold parameter will exclude any words that appear too infrequently.
 
     The sentences are segmented into words by a default segmenter. Right now it simply splits the words by spaces and split the punctuation (period or question mark) at the end. For more sophisticated sentences provide a better segmenter.
+
+    Method:
+    getDictionaries () => (dict, dict):
+        Return (index_to_word, word_to_index) to initialize another QAReader
+        with a preset dictionary instead of building them from scratch.
+
+        e.g.
+        qa1 = QAReader('file1.txt')
+        qa2 = QAReader('file2.txt', dictionaries=qa1.getDictionaries())
     """
     def __init__(self, filename,
                  threshold=3,
-                 segmenter=None):
+                 segmenter=None,
+                 dictionaries=None):
         if not segmenter:
             segmenter = self.segment
 
@@ -64,8 +78,9 @@ class QAReader:
         story = None
 
         word_counter = Counter()
-        self.index_to_word = ['NULL', 'EOS']
-        self.word_to_index = {'NULL': 0, 'EOS': 1}
+        build_dictionary = dictionaries is None
+        self.index_to_word = [] if build_dictionary else dictionaries[0]
+        self.word_to_index = {} if build_dictionary else dictionaries[1]
         with open(filename, 'r') as file:
             self.stories = []
             for line in file:
@@ -95,13 +110,14 @@ class QAReader:
             if story is not None: # last story
                 self.stories.append(story)
 
-            all_words = sorted(word_counter.keys())
-            for word in all_words:
-                if word_counter[word] >= threshold:
-                    self.word_to_index[word] = len(self.index_to_word)
-                    self.index_to_word.append(word)
-            self.word_to_index['<UNKNOWN>'] = len(self.index_to_word)
-            self.index_to_word.append('<UNKNOWN>')
+            if build_dictionary:
+                all_words = sorted(word_counter.keys())
+                for word in all_words:
+                    if word_counter[word] >= threshold:
+                        self.word_to_index[word] = len(self.index_to_word)
+                        self.index_to_word.append(word)
+                self.word_to_index['<UNKNOWN>'] = len(self.index_to_word)
+                self.index_to_word.append('<UNKNOWN>')
 
     @staticmethod
     def segment(sent):
@@ -111,3 +127,6 @@ class QAReader:
             words[-1] = lastword.strip(',.!?')
             words.append(lastword[-1])
         return words
+
+    def getDictionaries(self):
+        return self.index_to_word, self.word_to_index
