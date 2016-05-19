@@ -13,6 +13,7 @@ import theano
 from theano import tensor as T
 from theano.tensor import nnet
 import numpy as np
+import utils
 from utils import cast_floatX
 import init
 
@@ -458,10 +459,63 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initi
   num_in is the number of possible inputs (upper bound of i, vocabulary size)
   '''
   incoming, input_shape = incoming
-  output_shape = (input_shape[0], input_shape[1], num_out)
+  #output_shape = (input_shape[0], input_shape[1], num_out)
+  output_shape = tuple(list(input_shape) + [num_out])
 
   w_name = add_param((num_in, num_out), params, w_name or 'emb_%d' % len(params), w, initializer)
 
   return (params[w_name][incoming], output_shape)
   #return (params[w_name][incoming.flatten()].reshape([
     #incoming.shape[0], incoming.shape[1], num_out]), output_shape)
+
+ 
+def MemLayer(incomings, params):
+  '''
+  incomings = (u, u_shape, A, A_shape, C, C_shape)
+  '''
+  ((u, u_shape), (A, A_shape), (C, C_shape)) = incomings
+  p = T.batched_dot(A, u)
+  # C.shape = (batch_size, num_sen, embed_size), u.shape = (batch_size, embed_size)
+  # p.shape = (batch_size, num_sen, 1)
+  #return (p, u_shape)
+  O = (C * p[:, :, None]).sum(axis = 1)
+
+  return (O, u_shape)
+
+
+def SumLayer(incoming, axis=1):
+  incoming, input_shape = incoming
+  ret = incoming.sum(axis = axis)
+  input_shape = list(input_shape)
+  output_shape = tuple(input_shape[axis:] + input_shape[(axis+1):])
+  return (ret, output_shape)
+
+
+def ReshapeLayer(incoming, shape_after):
+  incoming, input_shape = incoming
+  shape_after = utils.reshape(input_shape, shape_after)
+  if shape_after[0] == 'x':
+    output = incoming.reshape([-1] + list(shape_after)[1:])
+  else:
+    output = layer[0].reshape(shape_after)
+  return (output, shape_after)
+
+
+def ConcatLayer(incomings, axis=1):
+  ins = []
+  input_shapes = []
+  for incoming in incomings:
+    ins.append(incoming[0])
+    input_shapes.append(incoming[1])
+  def concat_shape(shapes, axis):
+    shape_before = [tuple(s[:axis]) for s in shapes]
+    shape_after = [tuple(s[(axis+1):]) for s in shapes]
+    assert len(set(shape_before)) == 1 and len(set(shape_after))  == 1, \
+        "the shape of the 2 incoming layers should be the same except for axis"
+    if axis != 0:
+      shape_axis = np.sum([s[axis] for s in shapes])
+      return tuple(list(shape_before[0]) + [shape_axis] + list(shape_after[0]))
+    else:
+      return shapes[0]
+  output_shape = concat_shape(input_shapes, axis)
+  return (T.concatenate(ins, axis), output_shape)

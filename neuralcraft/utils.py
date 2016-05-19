@@ -24,19 +24,68 @@ def cross_entropy(yhat, y):
     y = T.flatten(y)
   return T.mean(nnet.categorical_crossentropy(yhatt, yt))
 
+'''
+def reshape(shape_prev, shape_after):
+  batch_size_prev, shape_prev = shape_prev[0], shape_prev[1:]
+  batch_size_after, shape_after = shape_after[0], shape_after[1:]
+  assert batch_size_prev == batch_size_after or \
+      (batch_size_prev == 'x' and batch_size_after == 'x'), 'batch size must be the same'
+  if np.prod(shape_prev) == np.prod(shape_after):
+    return tuple([batch_size_prev] + list(shape_after))
+  #assert np.prod(shape_after) < 0, "shape product changed: %s vs %s" % ((shape_prev,), (shape_after,))
+  id = np.where(np.array(shape_after) < 0)[0]
+  assert (len(id) == 1 and batch_size_prev != 'x') or (len(id) == 0 and batch_size_prev == 'x'),\
+      "more than one uncertain dim"
+  if batch_size_prev == 'x':
+    assert np.prod(shape_prev) % np.prod(shape_after) == 0, \
+        "shape product does not devide the original shape product" 
+    return tuple([batch_size_prev] + list(shape_after))
+  else:
+    id = id[0]
+    whole_prod = np.prod(shape_prev)
+    res_prod = np.prod(shape_after[:id]) * np.prod(shape_after[(id+1):])
+    assert whole_prod % res_prod == 0, "shape product does not devide the original shape product" 
+    dim_id = int(whole_prod / res_prod)
+    shape_out = list(shape_after)
+    shape_out[id] = dim_id
+    assert np.prod(shape_prev) == np.prod(shape_out), "inferred shape product changed"
+    return tuple([batch_size_prev] + shape_out)
+  '''
 
 def reshape(shape_prev, shape_after):
-  if np.prod(shape_prev) == np.prod(shape_after):
-    return shape_after
+  batch_size_prev, shape_prev = shape_prev[0], shape_prev[1:]
+  batch_size_after, shape_after = shape_after[0], shape_after[1:]
+  shape_prev = list(shape_prev)
+  shape_after = list(shape_after)
+  if batch_size_prev == 'x':
+    assert batch_size_after == 'x', \
+        "when input batch size is uncertain ('x'), output batch size should also be 'x')"
+    assert np.prod(shape_after) > 0, "only one axis can be uncertain"
+    assert np.prod(shape_prev) % np.prod(shape_after) == 0, \
+        "shape product does not devide the original shape product" 
+    return tuple([batch_size_prev] + shape_after)
+  if np.prod([batch_size_prev] + shape_prev) == np.prod([batch_size_after] + shape_after):
+    return tuple([batch_size_prev] + list(shape_after))
   assert np.prod(shape_after) < 0, "shape product changed: %s vs %s" % ((shape_prev,), (shape_after,))
   id = np.where(np.array(shape_after) < 0)[0]
-  assert len(id) == 1, "more than one negative dim"
+  assert len(id) == 1, "more than one uncertain dim"
   id = id[0]
-  dim_id = int(np.prod(shape_prev) / (np.prod(shape_after[:id]) * np.prod(shape_after[(id+1):])))
+  whole_prod = np.prod(shape_prev)
+  res_prod = np.prod(shape_after[:id]) * np.prod(shape_after[(id+1):])
+  assert whole_prod % res_prod == 0, "shape product does not devide the original shape product" 
+  dim_id = int(whole_prod / res_prod)
   shape_out = list(shape_after)
   shape_out[id] = dim_id
   assert np.prod(shape_prev) == np.prod(shape_out), "inferred shape product changed"
-  return tuple(shape_out)
+  return tuple([batch_size_prev] + shape_out)
+
+def layer_reshape(layer, shape_after):
+  shape_after = reshape(layer[1], shape_after)
+  if shape_after[0] == 'x':
+    output = layer[0].reshape([-1] + list(shape_after)[1:])
+  else:
+    output = layer[0].reshape(shape_after)
+  return (output, shape_after)
 
 def cast_floatX(x):
   return np.asarray(x, dtype=theano.config.floatX)

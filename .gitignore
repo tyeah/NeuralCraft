@@ -6,3 +6,5 @@
 *.ipynb
 examples/data
 *checkpoint.ipynb
+QA/bAbI
+setup.sh

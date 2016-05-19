@@ -149,7 +149,28 @@ def EmbeddingTest():
 
   print f(x)
 
+def MemTest():
+  C = np.random.rand(batch_size, seq_size, embedding_size)
+  A = np.random.rand(batch_size, seq_size, embedding_size)
+  u = np.random.rand(batch_size, embedding_size)
+
+  Ct = T.tensor3()
+  At = T.tensor3()
+  ut = T.matrix()
+  params = {}
+
+  Ot = MemLayer((ut, u.shape, At, A.shape, Ct, C.shape), params)
+  O = theano.function([ut, At, Ct], Ot[0])
+  print O(u, A, C)
+
+  def MemNum(u, A, C):
+    p = np.tensordot(A, u, axes=([2], [1]))
+    O = (C * p).sum(axis=1)
+    return O
+  print MemNum(u, A, C)
+
 if __name__ == '__main__':
+  '''
   FCTest()
   RNNTest()
   LSTMTest()
@@ -158,3 +179,5 @@ if __name__ == '__main__':
   poolingTest()
   EmbeddingTest()
   optimizerTest()
+  '''
+  MemTest()
