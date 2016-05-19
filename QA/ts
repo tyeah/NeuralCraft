@@ -1,0 +1,5 @@
+FILENAME=$1
+BASENAME="${FILENAME%.*}"
+EXT="${FILENAME##*.}"
+
+mv $BASENAME.$EXT $BASENAME-`date +"%Y-%m-%d-%H-%M"`.$EXT 

@@ -1,0 +1,250 @@
+DIA: no NVIDIA devices found
+WARNING (theano.sandbox.cuda): CUDA is installed, but device gpu0 is not available  (error: Unable to get the number of gpus available: unknown error)
+Starting compiling...
+Ending compiling...
+Compiling time: 30.98
+Starting training...
+cost at epoch 0, iteration 0: 3.320601
+cost at epoch 20, iteration 0: 3.314118
+cost at epoch 40, iteration 0: 3.296375
+cost at epoch 60, iteration 0: 3.306801
+cost at epoch 80, iteration 0: 3.302490
+cost at epoch 100, iteration 0: 3.310310
+cost at epoch 120, iteration 0: 3.326601
+cost at epoch 140, iteration 0: 3.321018
+cost at epoch 160, iteration 0: 3.349037
+cost at epoch 180, iteration 0: 3.342400
+cost at epoch 200, iteration 0: 3.328843
+cost at epoch 220, iteration 0: 3.337817
+cost at epoch 240, iteration 0: 3.325163
+cost at epoch 260, iteration 0: 3.363732
+cost at epoch 280, iteration 0: 3.336860
+cost at epoch 300, iteration 0: 3.301867
+cost at epoch 320, iteration 0: 3.344790
+cost at epoch 340, iteration 0: 3.356281
+cost at epoch 360, iteration 0: 3.324234
+cost at epoch 380, iteration 0: 3.301810
+Average cost in epoch 0: 3.328738
+cost at epoch 400, iteration 1: 3.330777
+cost at epoch 420, iteration 1: 3.341976
+cost at epoch 440, iteration 1: 3.361964
+cost at epoch 460, iteration 1: 3.321104
+cost at epoch 480, iteration 1: 3.311102
+cost at epoch 500, iteration 1: 3.323295
+cost at epoch 520, iteration 1: 3.326537
+cost at epoch 540, iteration 1: 3.344897
+cost at epoch 560, iteration 1: 3.351304
+cost at epoch 580, iteration 1: 3.298498
+cost at epoch 600, iteration 1: 3.295291
+cost at epoch 620, iteration 1: 3.285263
+cost at epoch 640, iteration 1: 3.323360
+cost at epoch 660, iteration 1: 3.312301
+cost at epoch 680, iteration 1: 3.297588
+cost at epoch 700, iteration 1: 3.352321
+cost at epoch 720, iteration 1: 3.318956
+cost at epoch 740, iteration 1: 3.350204
+cost at epoch 760, iteration 1: 3.331723
+cost at epoch 780, iteration 1: 3.330712
+Average cost in epoch 1: 3.329430
+cost at epoch 800, iteration 2: 3.338801
+cost at epoch 820, iteration 2: 3.321158
+cost at epoch 840, iteration 2: 3.333754
+cost at epoch 860, iteration 2: 3.370222
+cost at epoch 880, iteration 2: 3.346321
+cost at epoch 900, iteration 2: 3.359423
+cost at epoch 920, iteration 2: 3.320315
+cost at epoch 940, iteration 2: 3.318928
+cost at epoch 960, iteration 2: 3.309013
+cost at epoch 980, iteration 2: 3.336111
+cost at epoch 1000, iteration 2: 3.319706
+cost at epoch 1020, iteration 2: 3.354181
+cost at epoch 1040, iteration 2: 3.318708
+cost at epoch 1060, iteration 2: 3.347192
+cost at epoch 1080, iteration 2: 3.327368
+cost at epoch 1100, iteration 2: 3.370170
+cost at epoch 1120, iteration 2: 3.328431
+cost at epoch 1140, iteration 2: 3.345724
+cost at epoch 1160, iteration 2: 3.321138
+cost at epoch 1180, iteration 2: 3.337474
+Average cost in epoch 2: 3.330547
+cost at epoch 1200, iteration 3: 3.288838
+cost at epoch 1220, iteration 3: 3.344088
+cost at epoch 1240, iteration 3: 3.317087
+cost at epoch 1260, iteration 3: 3.334220
+cost at epoch 1280, iteration 3: 3.328541
+cost at epoch 1300, iteration 3: 3.340211
+cost at epoch 1320, iteration 3: 3.347105
+cost at epoch 1340, iteration 3: 3.337347
+cost at epoch 1360, iteration 3: 3.319445
+cost at epoch 1380, iteration 3: 3.351924
+cost at epoch 1400, iteration 3: 3.356228
+cost at epoch 1420, iteration 3: 3.321341
+cost at epoch 1440, iteration 3: 3.334542
+cost at epoch 1460, iteration 3: 3.331625
+cost at epoch 1480, iteration 3: 3.314024
+cost at epoch 1500, iteration 3: 3.313407
+cost at epoch 1520, iteration 3: 3.337154
+cost at epoch 1540, iteration 3: 3.350503
+cost at epoch 1560, iteration 3: 3.301317
+cost at epoch 1580, iteration 3: 3.333667
+Average cost in epoch 3: 3.330081
+cost at epoch 1600, iteration 4: 3.309518
+cost at epoch 1620, iteration 4: 3.305532
+cost at epoch 1640, iteration 4: 3.344160
+cost at epoch 1660, iteration 4: 3.317741
+cost at epoch 1680, iteration 4: 3.325921
+cost at epoch 1700, iteration 4: 3.329770
+cost at epoch 1720, iteration 4: 3.336794
+cost at epoch 1740, iteration 4: 3.336394
+cost at epoch 1760, iteration 4: 3.336936
+cost at epoch 1780, iteration 4: 3.358792
+cost at epoch 1800, iteration 4: 3.321288
+cost at epoch 1820, iteration 4: 3.295346
+cost at epoch 1840, iteration 4: 3.352538
+cost at epoch 1860, iteration 4: 3.326289
+cost at epoch 1880, iteration 4: 3.325223
+cost at epoch 1900, iteration 4: 3.317338
+cost at epoch 1920, iteration 4: 3.332974
+cost at epoch 1940, iteration 4: 3.311385
+cost at epoch 1960, iteration 4: 3.340549
+cost at epoch 1980, iteration 4: 3.361337
+Average cost in epoch 4: 3.330406
+cost at epoch 2000, iteration 5: 3.321608
+cost at epoch 2020, iteration 5: 3.311672
+cost at epoch 2040, iteration 5: 3.314908
+cost at epoch 2060, iteration 5: 3.331550
+cost at epoch 2080, iteration 5: 3.330231
+cost at epoch 2100, iteration 5: 3.300925
+cost at epoch 2120, iteration 5: 3.334631
+cost at epoch 2140, iteration 5: 3.296425
+cost at epoch 2160, iteration 5: 3.322536
+cost at epoch 2180, iteration 5: 3.337681
+cost at epoch 2200, iteration 5: 3.300301
+cost at epoch 2220, iteration 5: 3.349268
+cost at epoch 2240, iteration 5: 3.318587
+cost at epoch 2260, iteration 5: 3.355327
+cost at epoch 2280, iteration 5: 3.311480
+cost at epoch 2300, iteration 5: 3.318427
+cost at epoch 2320, iteration 5: 3.350437
+cost at epoch 2340, iteration 5: 3.336524
+cost at epoch 2360, iteration 5: 3.345442
+cost at epoch 2380, iteration 5: 3.351701
+Average cost in epoch 5: 3.328743
+cost at epoch 2400, iteration 6: 3.370458
+cost at epoch 2420, iteration 6: 3.352650
+cost at epoch 2440, iteration 6: 3.353715
+cost at epoch 2460, iteration 6: 3.316170
+cost at epoch 2480, iteration 6: 3.307579
+cost at epoch 2500, iteration 6: 3.307797
+cost at epoch 2520, iteration 6: 3.311402
+cost at epoch 2540, iteration 6: 3.322116
+cost at epoch 2560, iteration 6: 3.321671
+cost at epoch 2580, iteration 6: 3.343679
+cost at epoch 2600, iteration 6: 3.351396
+cost at epoch 2620, iteration 6: 3.304490
+cost at epoch 2640, iteration 6: 3.319243
+cost at epoch 2660, iteration 6: 3.320391
+cost at epoch 2680, iteration 6: 3.340885
+cost at epoch 2700, iteration 6: 3.323735
+cost at epoch 2720, iteration 6: 3.328436
+cost at epoch 2740, iteration 6: 3.343667
+cost at epoch 2760, iteration 6: 3.345962
+cost at epoch 2780, iteration 6: 3.344004
+Average cost in epoch 6: 3.330644
+cost at epoch 2800, iteration 7: 3.292310
+cost at epoch 2820, iteration 7: 3.353085
+cost at epoch 2840, iteration 7: 3.333797
+cost at epoch 2860, iteration 7: 3.307384
+cost at epoch 2880, iteration 7: 3.361426
+cost at epoch 2900, iteration 7: 3.366881
+cost at epoch 2920, iteration 7: 3.338967
+cost at epoch 2940, iteration 7: 3.324786
+cost at epoch 2960, iteration 7: 3.335977
+cost at epoch 2980, iteration 7: 3.354153
+cost at epoch 3000, iteration 7: 3.310589
+cost at epoch 3020, iteration 7: 3.365667
+cost at epoch 3040, iteration 7: 3.351976
+cost at epoch 3060, iteration 7: 3.340902
+cost at epoch 3080, iteration 7: 3.328283
+cost at epoch 3100, iteration 7: 3.294608
+cost at epoch 3120, iteration 7: 3.334907
+cost at epoch 3140, iteration 7: 3.327978
+cost at epoch 3160, iteration 7: 3.346416
+cost at epoch 3180, iteration 7: 3.303036
+Average cost in epoch 7: 3.329521
+cost at epoch 3200, iteration 8: 3.359419
+cost at epoch 3220, iteration 8: 3.369847
+cost at epoch 3240, iteration 8: 3.306679
+cost at epoch 3260, iteration 8: 3.295353
+cost at epoch 3280, iteration 8: 3.309949
+cost at epoch 3300, iteration 8: 3.312918
+cost at epoch 3320, iteration 8: 3.318403
+cost at epoch 3340, iteration 8: 3.299693
+cost at epoch 3360, iteration 8: 3.342340
+cost at epoch 3380, iteration 8: 3.340720
+cost at epoch 3400, iteration 8: 3.333122
+cost at epoch 3420, iteration 8: 3.329913
+cost at epoch 3440, iteration 8: 3.358769
+cost at epoch 3460, iteration 8: 3.303531
+cost at epoch 3480, iteration 8: 3.309281
+cost at epoch 3500, iteration 8: 3.340560
+cost at epoch 3520, iteration 8: 3.347175
+cost at epoch 3540, iteration 8: 3.306416
+cost at epoch 3560, iteration 8: 3.296665
+cost at epoch 3580, iteration 8: 3.300407
+Average cost in epoch 8: 3.328837
+cost at epoch 3600, iteration 9: 3.359273
+cost at epoch 3620, iteration 9: 3.331249
+cost at epoch 3640, iteration 9: 3.343957
+cost at epoch 3660, iteration 9: 3.351537
+cost at epoch 3680, iteration 9: 3.313015
+cost at epoch 3700, iteration 9: 3.333850
+cost at epoch 3720, iteration 9: 3.320683
+cost at epoch 3740, iteration 9: 3.336703
+cost at epoch 3760, iteration 9: 3.312031
+cost at epoch 3780, iteration 9: 3.325779
+cost at epoch 3800, iteration 9: 3.356777
+cost at epoch 3820, iteration 9: 3.319609
+cost at epoch 3840, iteration 9: 3.349780
+cost at epoch 3860, iteration 9: 3.329815
+cost at epoch 3880, iteration 9: 3.328685
+cost at epoch 3900, iteration 9: 3.301971
+cost at epoch 3920, iteration 9: 3.356006
+cost at epoch 3940, iteration 9: 3.334815
+cost at epoch 3960, iteration 9: 3.328017
+cost at epoch 3980, iteration 9: 3.301237
+Average cost in epoch 9: 3.328176
+Starting compiling...
+Ending compiling...
+Compiling time: 28.98
+Starting training...
+cost at epoch 0, iteration 0: 3.361687
+cost at epoch 20, iteration 0: 3.338481
+Average cost in epoch 0: 3.375070
+cost at epoch 40, iteration 1: 3.369084
+cost at epoch 60, iteration 1: 3.361073
+Average cost in epoch 1: 3.373825
+cost at epoch 80, iteration 2: 3.398441
+cost at epoch 100, iteration 2: 3.387923
+Average cost in epoch 2: 3.377975
+cost at epoch 120, iteration 3: 3.341555
+cost at epoch 140, iteration 3: 3.382303
+Average cost in epoch 3: 3.374227
+cost at epoch 160, iteration 4: 3.382782
+cost at epoch 180, iteration 4: 3.368406
+Average cost in epoch 4: 3.370207
+cost at epoch 200, iteration 5: 3.378945
+cost at epoch 220, iteration 5: 3.362773
+Average cost in epoch 5: 3.370779
+cost at epoch 240, iteration 6: 3.376595
+cost at epoch 260, iteration 6: 3.438936
+Average cost in epoch 6: 3.370123
+cost at epoch 280, iteration 7: 3.383485
+cost at epoch 300, iteration 7: 3.355608
+Average cost in epoch 7: 3.371568
+cost at epoch 320, iteration 8: 3.379835
+cost at epoch 340, iteration 8: 3.373900
+Average cost in epoch 8: 3.371169
+cost at epoch 360, iteration 9: 3.382661
+cost at epoch 380, iteration 9: 3.374243
+Average cost in epoch 9: 3.373467
