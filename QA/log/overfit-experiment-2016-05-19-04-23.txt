@@ -1,5 +1,8 @@
-DIA: no NVIDIA devices found
-WARNING (theano.sandbox.cuda): CUDA is installed, but device gpu0 is not available  (error: Unable to get the number of gpus available: unknown error)
+Initial experiment
+
+##################################################
+
+NVIDIA: no NVIDIA devices found
 Starting compiling...
 Ending compiling...
 Compiling time: 30.98

@@ -1,3 +1,8 @@
+Change from previous experiment: Increased max-iter to 30.
+Result: Still doesn't converge.
+
+################################################################################
+
 Starting compiling...
 Ending compiling...
 Compiling time: 25.61
