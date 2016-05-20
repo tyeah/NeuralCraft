@@ -148,6 +148,7 @@ class experiment(object):
                 if (shuffle):
                     np.random.shuffle(data_idx)
                 batch_idx.extend(data_idx[0:end])
+            else:
                 batch_idx = data_idx[start:end]
             start = end
             stories = [qa.stories[idx] for idx in batch_idx]

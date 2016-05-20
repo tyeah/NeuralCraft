@@ -11,11 +11,11 @@ data_options = {
     'word_to_index': None, ####################
     }
 optimization_options = {
-    'learning_rate': 0.01,
+    'learning_rate': 0.0001,
     'batch_size_train': 5,
     'batch_size_test': 3,
     'optimizer': 'rmsprop',
-    'max_epoch': 30,
+    'max_epoch': 50,
     'verbose': True,
     'disp_iter': 20,
     }
