@@ -487,8 +487,15 @@ def SumLayer(incoming, axis=1):
   incoming, input_shape = incoming
   ret = incoming.sum(axis = axis)
   input_shape = list(input_shape)
-  output_shape = tuple(input_shape[axis:] + input_shape[(axis+1):])
+  output_shape = tuple(input_shape[:axis] + input_shape[(axis+1):])
   return (ret, output_shape)
+
+
+def ElementwiseCombineLayer(incomings, fn=T.add):
+  ((u, u_shape), (v, v_shape)) = incomings
+  assert u_shape == v_shape, "2 inputs must have the same shape"
+  ret = fn(u, v)
+  return (ret, u_shape)
 
 
 def ReshapeLayer(incoming, shape_after):
