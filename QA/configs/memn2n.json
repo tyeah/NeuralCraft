@@ -5,15 +5,24 @@
         "reader": "QAReader",
         "word_to_index": "None"
     },
+    "log_options": {
+        "dump_params": "True",
+        "dump_path": "weights/memn2n/",
+        "dump_name": "memn2n.pkl",
+        "dump_epoch": -1,
+        "dump_config": "True"
+    },
     "optimization_options": {
         "learning_rate": 0.00005,
         "batch_size_train": 20,
         "batch_size_test": 100,
         "optimizer": "rmsprop",
-        "max_epoch": 200,
+        "max_epoch": 20,
         "verbose": "True",
         "disp_iter": 20,
-        "decay": 0.95
+        "decay": 0.95,
+        "load_params": "True",
+        "load_path": "weights/memn2n/memn2n.pkl"
     },
     "model_options": {
         "model_name": "memn2n",

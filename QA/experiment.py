@@ -8,6 +8,7 @@ import QAReader
 import numpy as np
 import Models
 from time import time
+import os
 import json
 import argparse
 
@@ -29,8 +30,14 @@ class experiment(object):
     self.mo = options['model_options']
     self.batch_size_train = self.oo['batch_size_train']
     self.batch_size_test = self.oo['batch_size_test']
-
     self.verbose = self.oo['verbose']
+
+    self.lo = options['log_options']
+    if self.lo['dump_epoch'] == -1:
+      self.lo['dump_epoch'] = self.oo['max_epoch']
+    if self.lo['dump_params']:
+      if not os.path.exists(self.lo['dump_path']):
+        os.makedirs(self.lo['dump_path'])
 
     self.model = Models.model(options)
 
@@ -42,6 +49,8 @@ class experiment(object):
     self.verbose_print('Starting compiling...')
     t0 = time()
     self.model.build()
+    if self.oo['load_params']:
+      self.model.load_params(self.oo['load_path'])
     self.verbose_print('Ending compiling...\nCompiling time: %.2f' % (time() - t0))
 
   def train(self):
@@ -63,6 +72,8 @@ class experiment(object):
         print 'cost at epoch %d, iteration %d: %f' % (iter_idx, epoch_idx, cost)
       iter_idx += 1
       if iter_idx % iters_in_epoch == 0:
+        if epoch_idx > 0 and epoch_idx % self.lo["dump_epoch"] == 0:
+          self.model.dump_params(self.lo['dump_path'] + self.lo['dump_name'])
         lr *= self.oo['decay']
         print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc / iters_in_epoch)
         epoch_idx += 1
@@ -75,6 +86,7 @@ class experiment(object):
         test_acc = np.mean(test_pred == a)
         print 'training accuracy: %f\ttest accuracy: %f' % (train_acc, test_acc)
         if epoch_idx >= max_epoch:
+          self.model.dump_params(self.lo['dump_path'] + self.lo['dump_name'])
           break
 
 
@@ -128,12 +140,16 @@ class experiment(object):
 def preprocess_options(options, disp=False):
   if disp:
       print "options:\n", json.dumps(options, indent=4, sort_keys=False)
-  if options['data_options']['reader'] == 'QAReader':
-    options['data_options']['reader'] = QAReader.QAReader
   for k0 in options:
     for k1 in options[k0]:
-      if options[k0][k1] == "True" or options[k0][k1] == "False":
-        options[k0][k1] = bool(options[k0][k1])
+      if options[k0][k1] == "True":
+        options[k0][k1] = True
+      elif options[k0][k1] == "False":
+        options[k0][k1] = False
+  if options['log_options']['dump_config']:
+    json.dump(options, open(options['log_options']['dump_path'] + options['log_options']['dump_name'].split('.')[0] + '.json', 'w'))
+  if options['data_options']['reader'] == 'QAReader':
+    options['data_options']['reader'] = QAReader.QAReader
 
 def main():
   parser = argparse.ArgumentParser()
