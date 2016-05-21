@@ -13,9 +13,9 @@ class model(object):
 
   def build(self):
     if self.mo['model_name'] == 'lstm':
-      self.pred_preb, self.pred, self.update = self.LSTM()
+      self.pred_prob, self.pred, self.update = self.LSTM()
     elif self.mo['model_name'] == 'memn2n':
-      self.pred_preb, self.pred, self.update = self.MemN2N()
+      self.pred_prob, self.pred, self.update = self.MemN2N()
 
   def LSTM(self):
     vs = self.mo['vocab_size']
@@ -51,8 +51,8 @@ class model(object):
     net['c_lstm'] = layers.LSTMLayer(net['c_emb_rsp'], 0., 0., params, nh, cmaskt_rsp, only_return_final=True)
     net['concat'] = layers.ConcatLayer((net['c_lstm'], net['u_lstm']), axis=1)
     net['output'] = layers.FCLayer(net['concat'], params, vs, activation=T.nnet.softmax)
-    pred_prob = theano.function([ct, cmaskt, ut, umaskt], net['output'][0])
-    pred = theano.function([ct, cmaskt, ut, umaskt], net['output'][0].argmax(axis=1))
+    pred_prob = theano.function([ct, cmaskt, ut, umaskt], net['output'][0], allow_input_downcast=True)
+    pred = theano.function([ct, cmaskt, ut, umaskt], net['output'][0].argmax(axis=1), allow_input_downcast=True)
 
     cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
 
@@ -104,8 +104,8 @@ class model(object):
     net['ou'] = layers.ElementwiseCombineLayer((net['o'], net['u_combine']), T.add)
     net['output'] = layers.FCLayer(net['ou'], params, vs, activation=T.nnet.softmax, w_name='w_fc', b_name='b_fc')
 
-    pred_prob = theano.function([ct, cmaskt, ut, umaskt], net['output'][0])
-    pred = theano.function([ct, cmaskt, ut, umaskt], net['output'][0].argmax(axis=1))
+    pred_prob = theano.function([ct, cmaskt, ut, umaskt], net['output'][0], allow_input_downcast=True)
+    pred = theano.function([ct, cmaskt, ut, umaskt], net['output'][0].argmax(axis=1), allow_input_downcast=True)
 
     cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
 
