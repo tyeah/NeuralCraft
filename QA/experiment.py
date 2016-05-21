@@ -27,8 +27,8 @@ optimization_options = {
     'disp_iter': 20,
 }
 model_options = {
-    #'model_name': 'memn2n',
-    'model_name': 'lstm',
+    'model_name': 'memn2n',
+    #'model_name': 'lstm',
     'context_length': 8,
     'sentence_length': 32,
     'embedding_size': 16,
