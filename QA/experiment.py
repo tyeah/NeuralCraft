@@ -21,13 +21,14 @@ optimization_options = {
     'learning_rate': 0.01,
     'batch_size_train': 5,
     'batch_size_test': 3,
-    'optimizer': 'rmsprop',
+     'optimizer': 'rmsprop',
     'max_epoch': 10,
     'verbose': True,
     'disp_iter': 20,
 }
 model_options = {
-    'model_name': 'lstm',
+    'model_name': 'memn2n',
+    #'model_name': 'lstm',
     'context_length': 8,
     'sentence_length': 32,
     'embedding_size': 16,
