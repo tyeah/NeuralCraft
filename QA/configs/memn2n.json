@@ -1,0 +1,26 @@
+{
+    "data_options": {
+        "train_path": "bAbI/en-10k/qa10_indefinite-knowledge_train.txt", 
+        "test_path": "bAbI/en-10k/qa10_indefinite-knowledge_test.txt", 
+        "reader": "QAReader",
+        "word_to_index": "None"
+    },
+    "optimization_options": {
+        "learning_rate": 0.00005,
+        "batch_size_train": 20,
+        "batch_size_test": 100,
+        "optimizer": "rmsprop",
+        "max_epoch": 200,
+        "verbose": "True",
+        "disp_iter": 20,
+        "decay": 0.95
+    },
+    "model_options": {
+        "model_name": "memn2n",
+        "context_length": 16,
+        "sentence_length": 32,
+        "embedding_size": 32,
+        "num_hid": 32,
+        "vocab_size": "None"
+    }
+}

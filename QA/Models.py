@@ -90,15 +90,15 @@ class model(object):
     net['u_emb'] = layers.EmbeddingLayer(u_in, params, vs, es, w_name='B')
     net['u_emb']= (net['u_emb'][0] * umaskt[:, :, None], net['u_emb'][1])
     net['u_combine'] = layers.SumLayer(net['u_emb'], axis=1)
-    #net['u_combine'] = (net['u_combine'][0] / T.sum(umaskt, axis=1)[:, None], net['u_combine'][1]) #optional
+    #net['u_combine'] = (net['u_combine'][0] / T.sum(umaskt[:, None].astype(theano.config.floatX), axis=1), net['u_combine'][1]) #optional
     net['a_emb'] = layers.EmbeddingLayer(c_in, params, vs, es, w_name='A')
     net['a_emb']= (net['a_emb'][0] * cmaskt[:, :, :,  None], net['a_emb'][1])
     net['a_combine'] = layers.SumLayer(net['a_emb'], axis=2)
-    #net['a_combine'] = (net['a_combine'][0] / T.sum(cmaskt, axis=2)[:, None], net['a_combine'][1]) #optional
+    #net['a_combine'] = (net['a_combine'][0] / T.sum(cmaskt[:, :, None].astype(theano.config.floatX), axis=2), net['a_combine'][1]) #optional
     net['c_emb'] = layers.EmbeddingLayer(c_in, params, vs, es, w_name='C')
     net['c_emb']= (net['c_emb'][0] * cmaskt[:, :, :,  None], net['c_emb'][1])
     net['c_combine'] = layers.SumLayer(net['c_emb'], axis=2)
-    #net['c_combine'] = (net['c_combine'][0] / T.sum(cmaskt, axis=2)[:, None], net['c_combine'][1]) #optional
+    #net['c_combine'] = (net['c_combine'][0] / T.sum(cmaskt[:, :, None].astype(theano.config.floatX), axis=2), net['c_combine'][1]) #optional
 
     net['o'] = layers.MemLayer((net['u_combine'], net['a_combine'], net['c_combine']), params)
     net['ou'] = layers.ElementwiseCombineLayer((net['o'], net['u_combine']), T.add)

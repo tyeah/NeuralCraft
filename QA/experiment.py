@@ -1,3 +1,4 @@
+# TODO: when to decay learning rate?
 # get dataset
 # minibatch
 # training
@@ -7,40 +8,8 @@ import QAReader
 import numpy as np
 import Models
 from time import time
-
-base_path = 'bAbI/en-10k/'
-train_path = base_path + 'qa10_indefinite-knowledge_train.txt'
-test_path = base_path + 'qa10_indefinite-knowledge_test.txt'
-data_options = {
-    'train_path': train_path, 
-    'test_path': test_path, 
-    'reader': QAReader.QAReader,
-    'word_to_index': None, ####################
-    }
-optimization_options = {
-    'learning_rate': 0.01,
-    'batch_size_train': 20,
-    'batch_size_test': 20,
-    'optimizer': 'rmsprop',
-    'max_epoch': 50,
-    'verbose': True,
-    'disp_iter': 20,
-    'decay': 0.95,
-    }
-model_options = {
-    'model_name': 'memn2n',
-    #'model_name': 'lstm',
-    'context_length': 8,
-    'sentence_length': 32,
-    'embedding_size': 32,
-    'num_hid': 32,
-    'vocab_size': None, #####################
-    }
-options = {
-    'data_options': data_options,
-    'optimization_options': optimization_options,
-    'model_options': model_options,
-    }
+import json
+import argparse
 
 
 class experiment(object):
@@ -94,6 +63,7 @@ class experiment(object):
         print 'cost at epoch %d, iteration %d: %f' % (iter_idx, epoch_idx, cost)
       iter_idx += 1
       if iter_idx % iters_in_epoch == 0:
+        lr *= self.oo['decay']
         print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc / iters_in_epoch)
         epoch_idx += 1
         cost_acc = 0
@@ -155,8 +125,26 @@ class experiment(object):
       ret_a = np.array([q.toIndex()['answer'] for q in questions])
       yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a)
 
+def preprocess_options(options, disp=False):
+  if disp:
+      print "options:\n", json.dumps(options, indent=4, sort_keys=False)
+  if options['data_options']['reader'] == 'QAReader':
+    options['data_options']['reader'] = QAReader.QAReader
+  for k0 in options:
+    for k1 in options[k0]:
+      if options[k0][k1] == "True" or options[k0][k1] == "False":
+        options[k0][k1] = bool(options[k0][k1])
 
 def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-o', '--options', type=str, default="configs/memn2n.json")
+  parser.add_argument('-do', '--display_options', dest='display_options', action='store_true')
+  parser.add_argument('-ndo', '--no_display_options', dest='display_options', action='store_false')
+  parser.set_defaults(display_options=True)
+  args = parser.parse_args()
+  options = json.load(open(args.options, 'r'))
+  preprocess_options(options, args.display_options)
+
   exp = experiment(options)
   exp.build_model()
   exp.train()
