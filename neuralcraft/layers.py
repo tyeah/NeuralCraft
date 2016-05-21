@@ -487,7 +487,7 @@ def SumLayer(incoming, axis=1):
   incoming, input_shape = incoming
   ret = incoming.sum(axis = axis)
   input_shape = list(input_shape)
-  output_shape = tuple(input_shape[axis:] + input_shape[(axis+1):])
+  output_shape = tuple(input_shape[:axis] + input_shape[(axis+1):])
   return (ret, output_shape)
 
 
