@@ -139,17 +139,16 @@ class experiment(object):
 
 def preprocess_options(options, disp=False):
   if disp:
-      print "options:\n", json.dumps(options, indent=4, sort_keys=False)
-  for k0 in options:
-    for k1 in options[k0]:
-      if options[k0][k1] == "True":
-        options[k0][k1] = True
-      elif options[k0][k1] == "False":
-        options[k0][k1] = False
+    print "options:\n", json.dumps(options, indent=4, sort_keys=False)
   if options['log_options']['dump_config']:
     json.dump(options, open(options['log_options']['dump_path'] + options['log_options']['dump_name'].split('.')[0] + '.json', 'w'))
-  if options['data_options']['reader'] == 'QAReader':
-    options['data_options']['reader'] = QAReader.QAReader
+
+  data_readers = {
+    'QAReader': QAReader.QAReader
+  }
+
+  options['data_options']['reader'] = \
+    data_readers.get(options['data_options']['reader'], None)
 
 def main():
   parser = argparse.ArgumentParser()
