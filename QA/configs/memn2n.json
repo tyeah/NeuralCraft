@@ -6,9 +6,9 @@
     },
     "log_options": {
         "dump_epoch": -1,
-        "dump_path": "configs/dump",
+        "dump_path": "configs",
         "dump_name": "memn2n.json",
-        "dump_config": true
+        "dump_config": false
     },
     "optimization_options": {
         "learning_rate": 0.00005,
