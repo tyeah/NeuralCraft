@@ -79,8 +79,11 @@ class QAReader:
 
         word_counter = Counter()
         build_dictionary = dictionaries is None
-        self.index_to_word = ['<NULL>', '<EOS>', '<UNKNOWN>'] if build_dictionary else dictionaries[0]
-        self.word_to_index = {'<NULL>': 0, '<EOS>': 1, '<UNKNOWN>': 2} if build_dictionary else dictionaries[1]
+        tokens = ['<NULL>', '<EOS>', '<UNKNOWN>']
+
+        self.index_to_word = tokens if build_dictionary else dictionaries[0]
+        self.word_to_index = {w: i for i, w in enumerate(tokens)} \
+                            if build_dictionary else dictionaries[1]
         with open(filename, 'r') as file:
             self.stories = []
             for line in file:
@@ -117,6 +120,9 @@ class QAReader:
                         self.word_to_index[word] = len(self.index_to_word)
                         self.index_to_word.append(word)
 
+            self.specialWords = {w: self.word_to_index[w] for w in tokens}
+
+
     @staticmethod
     def segment(sent):
         words = sent.split()
@@ -128,7 +134,3 @@ class QAReader:
 
     def getDictionaries(self):
         return self.index_to_word, self.word_to_index
-
-    def specialWords(self):
-      sws = ['<NULL>', '<EOS>', '<UNKNOWN>']
-      return dict(zip(sws, [self.word_to_index[w] for w in sws]))

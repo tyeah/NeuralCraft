@@ -1,15 +1,13 @@
 {
     "data_options": {
-        "train_path": "bAbI/en-10k/qa10_indefinite-knowledge_train.txt",
-        "test_path": "bAbI/en-10k/qa10_indefinite-knowledge_test.txt",
-        "reader": "QAReader",
-        "word_to_index": null
+        "task_number": 10,
+        "language": "en-10k",
+        "reader": "QAReader"
     },
     "log_options": {
-        "dump_params": true,
-        "dump_path": "weights/memn2n/",
-        "dump_name": "memn2n.pkl",
         "dump_epoch": -1,
+        "dump_path": "configs/dump",
+        "dump_name": "memn2n.json",
         "dump_config": true
     },
     "optimization_options": {
@@ -21,8 +19,12 @@
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.95,
+
+        "weight_path": "weights/memn2n",
         "load_params": true,
-        "load_path": "weights/memn2n/memn2n.pkl"
+        "load_name": "memn2n.pkl",
+        "dump_params": true,
+        "dump_name": "memn2n.pkl"
     },
     "model_options": {
         "model_name": "memn2n",

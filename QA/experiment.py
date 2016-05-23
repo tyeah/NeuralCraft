@@ -18,14 +18,13 @@ class experiment(object):
     self.do = options['data_options']
     self.qa_train = self.do['reader'](self.do['train_path'])
     self.qa_test = self.do['reader'](self.do['train_path'], dictionaries=self.qa_train.getDictionaries())
-    specialWords = self.qa_train.specialWords()
+    specialWords = self.qa_train.specialWords
     self.NULL = specialWords['<NULL>']
     self.EOS=specialWords['<EOS>']
     self.UNKNOWN = specialWords['<UNKNOWN>']
     vocab_size = len(self.qa_train.index_to_word)
     options['model_options']['vocab_size'] = vocab_size
     self.data_size = len(self.qa_train.stories)
-
     self.oo = options['optimization_options']
     self.mo = options['model_options']
     self.batch_size_train = self.oo['batch_size_train']
@@ -69,7 +68,7 @@ class experiment(object):
       cost = self.model.update(c, cmask, u, umask, a, lr)
       cost_acc += cost
       if iter_idx % disp_iter == 0:
-        print 'cost at epoch %d, iteration %d: %f' % (iter_idx, epoch_idx, cost)
+        print 'cost at epoch %d, iteration %d: %f' % (epoch_idx, iter_idx, cost)
       iter_idx += 1
       if iter_idx % iters_in_epoch == 0:
         if epoch_idx > 0 and epoch_idx % self.lo["dump_epoch"] == 0:
@@ -138,17 +137,21 @@ class experiment(object):
       yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a)
 
 def preprocess_options(options, disp=False):
-  if disp:
-    print "options:\n", json.dumps(options, indent=4, sort_keys=False)
-  if options['log_options']['dump_config']:
-    json.dump(options, open(options['log_options']['dump_path'] + options['log_options']['dump_name'].split('.')[0] + '.json', 'w'))
+    if disp:
+        print "options:\n", json.dumps(options, indent=4, sort_keys=False)
 
-  data_readers = {
-    'QAReader': QAReader.QAReader
-  }
+    if options['log_options']['dump_config']:
+        path = options['log_options']['dump_path']
+        dumpname = options['log_options']['dump_name']
+        basename = os.path.splitext(dumpname)[0] + '.json'
+        json.dump(options, open(os.path.join(path, basename), 'w'))
 
-  options['data_options']['reader'] = \
-    data_readers.get(options['data_options']['reader'], None)
+    data_readers = {
+        'QAReader': QAReader.QAReader
+    }
+
+    options['data_options']['reader'] \
+    = data_readers[options['data_options']['reader']]
 
 def main():
   parser = argparse.ArgumentParser()
