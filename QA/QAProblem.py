@@ -66,7 +66,8 @@ class QATask:
 
         vocab_size = len(self.qa_train.index_to_word)
         options['model_options']['vocab_size'] = vocab_size
-        self.model = Models.model(options)
+        model_name = self.mo['model_name']
+        self.model = Models.model(model_name)(options)
 
     def logger_factory(self):
         def log(s):
@@ -114,8 +115,9 @@ class QATask:
             iter_idx += 1
             if iter_idx % iters_in_epoch == 0:
                 if epoch_idx > 0 and epoch_idx % self.lo["dump_epoch"] == 0:
-                    self.model.dump_params(self.oo['weight_path'] + self.oo[
-                        'dump_name'])
+                    dump_file = os.path.join(self.oo['weight_path'],
+                                            self.oo['dump_name'])
+                    self.model.dump_params(dump_file)
                 lr *= self.oo['decay']
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
                                                         iters_in_epoch)
