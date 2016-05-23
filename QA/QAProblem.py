@@ -32,7 +32,7 @@ def read_dataset(task_num, lang, Reader):
     return train_set, test_set
 
 
-class QATask:
+class QATask(object):
     def __init__(self, options):
         self.do = options['data_options']
         task_num = self.do['task_number']

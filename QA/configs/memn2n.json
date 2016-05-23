@@ -15,7 +15,7 @@
         "batch_size_train": 20,
         "batch_size_test": 100,
         "optimizer": "rmsprop",
-        "max_epoch": 20,
+        "max_epoch": -1,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.95,
