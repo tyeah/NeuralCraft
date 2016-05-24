@@ -79,8 +79,11 @@ class QAReader:
 
         word_counter = Counter()
         build_dictionary = dictionaries is None
-        self.index_to_word = [] if build_dictionary else dictionaries[0]
-        self.word_to_index = {} if build_dictionary else dictionaries[1]
+        tokens = ['<NULL>', '<EOS>', '<UNKNOWN>']
+
+        self.index_to_word = tokens if build_dictionary else dictionaries[0]
+        self.word_to_index = {w: i for i, w in enumerate(tokens)} \
+                            if build_dictionary else dictionaries[1]
         with open(filename, 'r') as file:
             self.stories = []
             for line in file:
@@ -94,7 +97,7 @@ class QAReader:
 
                 if '?' in string: # this is a question
                     question, answer, evidences = string.split('\t')
-                    question = segmenter(question)
+                    question = segmenter(question[:-1])
                     word_counter.update(question)
                     word_counter[answer] += 1
                     quest = Question(question, answer, self.word_to_index)
@@ -102,7 +105,7 @@ class QAReader:
                         quest.evidences.append(context_id_mapping[evid])
                     story.questions.append(quest)
                 else:
-                    context = segmenter(string)
+                    context = segmenter(string[:-1])
                     word_counter.update(context)
                     con = Context(context, self.word_to_index)
                     context_id_mapping[id] = con
@@ -116,8 +119,9 @@ class QAReader:
                     if word_counter[word] >= threshold:
                         self.word_to_index[word] = len(self.index_to_word)
                         self.index_to_word.append(word)
-                self.word_to_index['<UNKNOWN>'] = len(self.index_to_word)
-                self.index_to_word.append('<UNKNOWN>')
+
+            self.specialWords = {w: self.word_to_index[w] for w in tokens}
+
 
     @staticmethod
     def segment(sent):

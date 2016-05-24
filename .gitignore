@@ -7,4 +7,6 @@
 examples/data
 *checkpoint.ipynb
 QA/bAbI
+QA/weights
+QA/neuralcraft
 setup.sh
