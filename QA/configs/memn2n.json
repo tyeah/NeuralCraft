@@ -1,5 +1,6 @@
 {
     "data_options": {
+        "data_path": "bAbI",
         "task_number": 10,
         "language": "en-10k",
         "reader": "QAReader"
@@ -15,7 +16,7 @@
         "batch_size_train": 20,
         "batch_size_test": 100,
         "optimizer": "rmsprop",
-        "max_epoch": -1,
+        "max_epoch": ,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.95,

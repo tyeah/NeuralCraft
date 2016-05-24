@@ -9,10 +9,8 @@ import numpy as np
 from QAReader import QAReader
 import Models
 
-bAbI_base = Path('bAbI')
-
-
-def read_dataset(task_num, lang, Reader):
+def read_dataset(data_path, task_num, lang, Reader):
+    bAbI_base = Path(data_path)
     data_base = bAbI_base / lang
     if 1 <= task_num <= 20:
         try:
@@ -23,10 +21,10 @@ def read_dataset(task_num, lang, Reader):
         test_fn, train_fn = tuple(map(lambda fn: str(data_base / fn), sorted(
             filter(lambda fn: fn.startswith('qa%d_' % task_num), files))))
         train_set = Reader(train_fn)
-        # test_set = Reader(test_fn,
-        #                 dictionaries=train_set.getDictionaries())
+        test_set = Reader(test_fn,
+                        dictionaries=train_set.getDictionaries())
         # This below recreates the situation of experiment.py
-        test_set = Reader(train_fn, dictionaries=train_set.getDictionaries())
+        # test_set = Reader(train_fn, dictionaries=train_set.getDictionaries())
     else:
         raise ValueError('Invalid task number: %d' % task_num)
     return train_set, test_set
@@ -35,10 +33,12 @@ def read_dataset(task_num, lang, Reader):
 class QATask(object):
     def __init__(self, options):
         self.do = options['data_options']
+        data_path = self.do['data_path']
         task_num = self.do['task_number']
         lang = self.do.get('language', 'en')  # defaults to use small Eng set
         self.qa_train, self.qa_test \
-            = read_dataset(task_num, lang, options['data_options']['reader'])
+            = read_dataset(data_path,
+                           task_num, lang, options['data_options']['reader'])
 
         self.data_size = len(self.qa_train.stories)
 
@@ -113,10 +113,10 @@ class QATask(object):
                 print 'cost at epoch %d, iteration %d: %f' % (epoch_idx,
                                                               iter_idx, cost)
             iter_idx += 1
+            dump_file = os.path.join(self.oo['weight_path'],
+                                     self.oo['dump_name'])
             if iter_idx % iters_in_epoch == 0:
                 if epoch_idx > 0 and epoch_idx % self.lo["dump_epoch"] == 0:
-                    dump_file = os.path.join(self.oo['weight_path'],
-                                            self.oo['dump_name'])
                     self.model.dump_params(dump_file)
                 lr *= self.oo['decay']
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
@@ -132,8 +132,7 @@ class QATask(object):
                 print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
                                                                     test_acc)
                 if epoch_idx >= max_epoch:
-                    self.model.dump_params(self.oo['weight_path'] + self.oo[
-                        'dump_name'])
+                    self.model.dump_params(dump_file)
                     break
 
     def minibatch(self, qa, batch_size=None, shuffle=True):
