@@ -12,11 +12,11 @@
         "dump_config": false
     },
     "optimization_options": {
-        "learning_rate": 0.0000005,
+        "learning_rate": 0.05,
         "batch_size_train": 1,
         "batch_size_test": 1,
         "optimizer": "rmsprop",
-        "max_epoch": 2000,
+        "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.95,
