@@ -12,7 +12,7 @@
         "dump_config": false
     },
     "optimization_options": {
-        "learning_rate": 0.00005,
+        "learning_rate": 0.0000005,
         "batch_size_train": 1,
         "batch_size_test": 1,
         "optimizer": "rmsprop",
@@ -22,7 +22,7 @@
         "decay": 0.95,
 
         "weight_path": "weights/memn2n",
-        "load_params": true,
+        "load_params": false,
         "load_name": "memn2n-overfit.pkl",
         "dump_params": true,
         "dump_name": "memn2n-overfit.pkl"
