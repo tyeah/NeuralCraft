@@ -1,0 +1,38 @@
+{
+    "data_options": {
+        "data_path": "mydata",
+        "task_number": 10,
+        "language": "en",
+        "reader": "QAReader"
+    },
+    "log_options": {
+        "dump_epoch": -1,
+        "dump_path": "configs",
+        "dump_name": "memn2n.json",
+        "dump_config": false
+    },
+    "optimization_options": {
+        "learning_rate": 0.00005,
+        "batch_size_train": 1,
+        "batch_size_test": 1,
+        "optimizer": "rmsprop",
+        "max_epoch": 2000,
+        "verbose": true,
+        "disp_iter": 20,
+        "decay": 0.95,
+
+        "weight_path": "weights/memn2n",
+        "load_params": true,
+        "load_name": "memn2n-overfit.pkl",
+        "dump_params": true,
+        "dump_name": "memn2n-overfit.pkl"
+    },
+    "model_options": {
+        "model_name": "memn2n",
+        "context_length": 16,
+        "sentence_length": 32,
+        "embedding_size": 32,
+        "num_hid": 32,
+        "vocab_size": null
+    }
+}
