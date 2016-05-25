@@ -7,6 +7,7 @@ from time import time
 import numpy as np
 
 from QAReader import QAReader
+from MonoSentReader import MonoSentReader
 import Models
 
 def read_dataset(data_path, task_num, lang, Reader):
@@ -202,7 +203,7 @@ def preprocess_options(options, disp=False):
                   indent=4,
                   sort_keys=False)
 
-    data_readers = {'QAReader': QAReader}
+    data_readers = {'QAReader': QAReader, 'One-Sentence': MonoSentReader}
 
     options['data_options']['reader'] \
     = data_readers[options['data_options']['reader']]

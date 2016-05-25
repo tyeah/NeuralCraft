@@ -39,7 +39,7 @@ class Story(object):
     def __repr__(self):
         return '< Q&A Story with {} context sentences, {} questions >'.format(len(self.contexts), len(self.questions))
 
-class QAReader:
+class QAReader(object):
     """QAReader: reader for bAbI qa files
     Each file contains sentences in either of the following two patterns
     > ID text
