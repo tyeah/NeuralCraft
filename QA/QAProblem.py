@@ -105,9 +105,11 @@ class QATask(object):
         epoch_idx = 0
         iter_idx = 0
         cost_acc = 0
-        test_acc = 1e-8
+        #test_acc = 0
+        train_acc = 0
         while (True):
             c, cmask, u, umask, a = next(train_batch)
+            train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
             '''
@@ -123,14 +125,14 @@ class QATask(object):
                     self.model.dump_params(dump_file)
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
                                                         iters_in_epoch)
-                epoch_idx += 1
                 cost_acc = 0
-                c, cmask, u, umask, a = next(train_batch)
-                train_pred = self.model.pred(c, cmask, u, umask)
-                train_acc = np.mean(train_pred == a)
+                #c, cmask, u, umask, a = next(train_batch)
+                #train_pred = self.model.pred(c, cmask, u, umask)
+                #train_acc = np.mean(train_pred == a)
+                train_acc /= iters_in_epoch
                 c, cmask, u, umask, a = next(test_batch)
                 test_pred = self.model.pred(c, cmask, u, umask)
-                test_acc_old = test_acc
+                #test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
                 
                 if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
@@ -138,6 +140,8 @@ class QATask(object):
                     print "lr decays to %f" % lr
                 print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
                                                                     test_acc)
+                train_acc = 0
+                epoch_idx += 1
                 if epoch_idx >= max_epoch:
                     break
         self.model.dump_params(dump_file)

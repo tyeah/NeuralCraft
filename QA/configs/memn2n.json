@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 1,
+        "task_number": 3,
         "language": "en",
         "reader": "QAReader"
     },
@@ -15,11 +15,11 @@
         "learning_rate": 0.01,
         "batch_size_train": 32,
         "batch_size_test": null,
-        "optimizer": "rmsprop",
-        "max_epoch": 200,
+        "optimizer": "sgd",
+        "max_epoch": 400,
         "verbose": true,
         "disp_iter": 20,
-        "decay": 0.5,
+        "decay": 1.0,
         "decay_period": 25,
         "weight_path": "weights/memn2n",
         "load_params": false,
@@ -31,10 +31,10 @@
         "model_name": "memn2n",
         "context_length": 16,
         "sentence_length": 20,
-        "embedding_size": 20,
+        "embedding_size": 40,
         "num_hid": 32,
         "vocab_size": null,
-        "n_hops": 1,
+        "n_hops": 2,
         "position_encode": false,
         "temporal_encode": false
     }
