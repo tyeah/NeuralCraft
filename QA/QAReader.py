@@ -1,8 +1,10 @@
 import re
 from collections import Counter
 
+
 def getIfExists(dictionary, key):
     return dictionary.get(key, dictionary['<UNKNOWN>'])
+
 
 class Context:
     def __init__(self, string, dictionary):
@@ -15,6 +17,7 @@ class Context:
     def __repr__(self):
         return ' '.join(self.string)
 
+
 class Question:
     def __init__(self, question, answer, dictionary):
         self.question = question
@@ -24,20 +27,25 @@ class Question:
 
     def toIndex(self):
         return {'question': [getIfExists(self.dictionary, w)
-                for w in self.question],
-                'answer': getIfExists(self.dictionary, self.answer) }
+                             for w in self.question],
+                'answer': getIfExists(self.dictionary, self.answer)}
 
     def __repr__(self):
-        return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(' '.join(self.question), self.answer, str(self.evidences))
+        return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(
+            ' '.join(self.question), self.answer, str(self.evidences))
+
 
 class Story(object):
     """docstring for Story"""
+
     def __init__(self):
         self.contexts = []
         self.questions = []
 
     def __repr__(self):
-        return '< Q&A Story with {} context sentences, {} questions >'.format(len(self.contexts), len(self.questions))
+        return '< Q&A Story with {} context sentences, {} questions >'.format(
+            len(self.contexts), len(self.questions))
+
 
 class QAReader:
     """QAReader: reader for bAbI qa files
@@ -49,7 +57,7 @@ class QAReader:
     The reader reads each sentence and parse them into:
           Story
               |- Context
-              |- Questoin
+              |- Question
 
     The reader also indexes the word, producing
     > index_to_word: a list of words
@@ -67,10 +75,13 @@ class QAReader:
         qa1 = QAReader('file1.txt')
         qa2 = QAReader('file2.txt', dictionaries=qa1.getDictionaries())
     """
-    def __init__(self, filename,
+
+    def __init__(self,
+                 filename,
                  threshold=3,
                  segmenter=None,
-                 dictionaries=None):
+                 dictionaries=None,
+                 include_testset_vocab=True):
         if not segmenter:
             segmenter = self.segment
 
@@ -89,13 +100,14 @@ class QAReader:
             for line in file:
                 id, string = splitter.match(line).groups()
                 id = int(id)
+                string = string.lower()
                 if id == 1:
                     if story is not None:
                         self.stories.append(story)
                     story = Story()
                     context_id_mapping = {}
 
-                if '?' in string: # this is a question
+                if '?' in string:  # this is a question
                     question, answer, evidences = string.split('\t')
                     question = segmenter(question[:-1])
                     word_counter.update(question)
@@ -110,18 +122,18 @@ class QAReader:
                     con = Context(context, self.word_to_index)
                     context_id_mapping[id] = con
                     story.contexts.append(con)
-            if story is not None: # last story
+            if story is not None:  # last story
                 self.stories.append(story)
 
-            if build_dictionary:
+            if include_testset_vocab:
                 all_words = sorted(word_counter.keys())
                 for word in all_words:
-                    if word_counter[word] >= threshold:
+                    if word_counter[
+                            word] >= threshold and word not in self.word_to_index:
                         self.word_to_index[word] = len(self.index_to_word)
                         self.index_to_word.append(word)
 
             self.specialWords = {w: self.word_to_index[w] for w in tokens}
-
 
     @staticmethod
     def segment(sent):
@@ -134,3 +146,7 @@ class QAReader:
 
     def getDictionaries(self):
         return self.index_to_word, self.word_to_index
+
+    def __repr__(self):
+        return '< Q&A Reader with {} stories. Vocab size = {} >'.format(
+                    len(self.stories), len(self.index_to_word))
