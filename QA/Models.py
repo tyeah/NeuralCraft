@@ -3,7 +3,7 @@ import pickle
 import theano
 from theano import tensor as T
 
-from neuralcraft import layers, optimizers, utils
+from neuralcraft import layers, optimizers, utils, init
 
 
 def model(model_name):
@@ -121,7 +121,9 @@ class MemN2N_Model(Model):
         nh = self.mo['num_hid']
         sl = self.mo['sentence_length']
         cl = self.mo['context_length']
-        #n_hops = self.mo['n_hops']
+        n_hops = self.mo['n_hops']
+        pe = self.mo['position_encode']
+        te = self.mo['temporal_encode']
 
         u_shape = ('x', sl)
         c_shape = ('x', cl, sl)
@@ -134,43 +136,77 @@ class MemN2N_Model(Model):
         at = T.ivector()
 
         lr = T.scalar()
-        opt_options = {'lr': lr}
+        opt_options = {'lr': lr, 'clip_norm': 40}
 
         u_in = (ut, u_shape)
         c_in = (ct, c_shape)
         a_in = (at, a_shape)
 
-        net = {}
-        net['u_emb'] = layers.EmbeddingLayer(
-            u_in, self.params, vs, es, w_name='B')
-        net['u_emb'] = (net['u_emb'][0] * umaskt[:, :, None], net['u_emb'][1])
-        net['u_combine'] = layers.SumLayer(net['u_emb'], axis=1)
-        #net['u_combine'] = (net['u_combine'][0] / T.sum(umaskt[:, None].astype(theano.config.floatX), axis=1), net['u_combine'][1]) #optional
-        net['a_emb'] = layers.EmbeddingLayer(
-            c_in, self.params, vs, es, w_name='A')
-        net['a_emb'] = (net['a_emb'][0] * cmaskt[:, :, :, None],
-                        net['a_emb'][1])
-        net['a_combine'] = layers.SumLayer(net['a_emb'], axis=2)
-        #net['a_combine'] = (net['a_combine'][0] / T.sum(cmaskt[:, :, None].astype(theano.config.floatX), axis=2), net['a_combine'][1]) #optional
-        net['c_emb'] = layers.EmbeddingLayer(
-            c_in, self.params, vs, es, w_name='C')
-        net['c_emb'] = (net['c_emb'][0] * cmaskt[:, :, :, None],
-                        net['c_emb'][1])
-        net['c_combine'] = layers.SumLayer(net['c_emb'], axis=2)
-        #net['c_combine'] = (net['c_combine'][0] / T.sum(cmaskt[:, :, None].astype(theano.config.floatX), axis=2), net['c_combine'][1]) #optional
+        '''
+        if pe:
+          Ju = T.sum(umaskt. axis=1)
+          Jc = T.sum(cmaskt, axis=2)
+          #PEu = 
+        '''
 
-        net['o'] = layers.MemLayer(
-            (net['u_combine'], net['a_combine'],
-             net['c_combine']), self.params)
+        net = {}
+        for nh in range(n_hops):
+          if nh == 0:
+            net['u_emb_%d' % nh] = layers.EmbeddingLayer(
+                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.1))
+            net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] * umaskt[:, :, None], net['u_emb_%d' % nh][1])
+            net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
+            net['a_emb_%d' % nh] = layers.EmbeddingLayer(
+                c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.1))
+            net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
+                            net['a_emb_%d' % nh][1])
+            net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
+            if te:
+              net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
+            net['c_emb_%d' % nh] = layers.EmbeddingLayer(
+                c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.1))
+            net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
+                            net['c_emb_%d' % nh][1])
+            net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
+            if te:
+              net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
+
+            net['o_%d' % nh] = layers.MemLayer(
+                (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
+                 net['c_combine_%d' % nh]), self.params)
+          else:
+            net['u_combine_%d' % nh] = layers.LinearLayer(net['u_combine_%d' % (nh - 1)], self.params, es, w_name='H')
+            net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer((net['u_combine_%d' % nh], net['o_%d' % (nh-1)]), T.add)
+            net['a_emb_%d' % nh] = layers.EmbeddingLayer(
+                c_in, self.params, vs, es, w_name='A')
+            net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
+                            net['a_emb_%d' % nh][1])
+            net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
+            if te:
+              net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
+            net['c_emb_%d' % nh] = layers.EmbeddingLayer(
+                c_in, self.params, vs, es, w_name='C')
+            net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
+                            net['c_emb_%d' % nh][1])
+            net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
+            if te:
+              net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
+
+            net['o_%d' % nh] = layers.MemLayer(
+                (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
+                 net['c_combine_%d' % nh]), self.params)
+
         net['ou'] = layers.ElementwiseCombineLayer(
-            (net['o'], net['u_combine']), T.add)
-        net['output'] = layers.FCLayer(net['ou'],
+          (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
+
+        net['output'] = layers.LinearLayer(net['ou'],
                                        self.params,
                                        vs,
                                        activation=T.nnet.softmax,
                                        w_name='w_fc',
-                                       b_name='b_fc')
+                                       w_initializer=init.Gaussian(sigma=0.1))
 
+        print net.keys()
         pred_prob = theano.function(
             [ct, cmaskt, ut, umaskt],
             net['output'][0], allow_input_downcast=True)

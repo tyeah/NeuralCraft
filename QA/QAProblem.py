@@ -21,7 +21,7 @@ def read_dataset(data_path, task_num, lang, Reader):
         # "train" is lexicographically behind "test"
         test_fn, train_fn = tuple(map(lambda fn: str(data_base / fn), sorted(
             filter(lambda fn: fn.startswith('qa%d_' % task_num), files))))
-        train_set = Reader(train_fn)
+        train_set = Reader(train_fn, threshold=0)
         test_set = Reader(test_fn,
                         dictionaries=train_set.getDictionaries())
         # This below recreates the situation of experiment.py
@@ -106,20 +106,22 @@ class QATask(object):
         epoch_idx = 0
         iter_idx = 0
         cost_acc = 0
+        test_acc = 1e-8
         while (True):
             c, cmask, u, umask, a = next(train_batch)
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
+            '''
             if iter_idx % disp_iter == 0:
                 print 'cost at epoch %d, iteration %d: %f' % (epoch_idx,
                                                               iter_idx, cost)
+            '''
             iter_idx += 1
             dump_file = os.path.join(self.oo['weight_path'],
                                      self.oo['dump_name'])
             if iter_idx % iters_in_epoch == 0:
                 if epoch_idx > 0 and epoch_idx % self.lo["dump_epoch"] == 0:
                     self.model.dump_params(dump_file)
-                lr *= self.oo['decay']
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
                                                         iters_in_epoch)
                 epoch_idx += 1
@@ -129,12 +131,18 @@ class QATask(object):
                 train_acc = np.mean(train_pred == a)
                 c, cmask, u, umask, a = next(test_batch)
                 test_pred = self.model.pred(c, cmask, u, umask)
+                test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
+                
+                if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
+                    lr *= self.oo['decay']
+                    print "lr decays to %f" % lr
                 print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
                                                                     test_acc)
                 if epoch_idx >= max_epoch:
-                    self.model.dump_params(dump_file)
                     break
+        self.model.dump_params(dump_file)
+
 
     def minibatch(self, qa, batch_size=None, shuffle=True):
         data_size = len(qa.stories)
