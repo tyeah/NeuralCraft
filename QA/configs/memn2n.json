@@ -1,8 +1,8 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 10,
-        "language": "en-10k",
+        "task_number": 1,
+        "language": "en",
         "reader": "QAReader"
     },
     "log_options": {
@@ -12,17 +12,16 @@
         "dump_config": false
     },
     "optimization_options": {
-        "learning_rate": 0.00005,
-        "batch_size_train": 20,
-        "batch_size_test": 100,
+        "learning_rate": 0.005,
+        "batch_size_train": 32,
+        "batch_size_test": null,
         "optimizer": "rmsprop",
-        "max_epoch": ,
+        "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
-        "decay": 0.95,
-
+        "decay": 0.67,
         "weight_path": "weights/memn2n",
-        "load_params": true,
+        "load_params": false,
         "load_name": "memn2n.pkl",
         "dump_params": true,
         "dump_name": "memn2n.pkl"
@@ -30,9 +29,12 @@
     "model_options": {
         "model_name": "memn2n",
         "context_length": 16,
-        "sentence_length": 32,
-        "embedding_size": 32,
+        "sentence_length": 16,
+        "embedding_size": 20,
         "num_hid": 32,
-        "vocab_size": null
+        "vocab_size": null,
+        "n_hops": 1,
+        "position_encode": false,
+        "temporal_encode": false
     }
 }

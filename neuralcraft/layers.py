@@ -33,23 +33,24 @@ def w_initializer(shape):
 b_initializer = lambda shape: cast_floatX(np.zeros(shape))
 
 def add_param(shape, params, name=None, val=None, initializer=init.HeUniform()):
-  if name is None:
-    name = name_suf(name, '_%d' % len(params))
-  if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
-    assert(shape == val.get_value().shape)
-    assert(val.dtype == theano.config.floatX)
-    '''
-    if val.dtype != theano.config.floatX:
-      val = val.astype(theano.config.floatX)
-    '''
-    params[name] = val
-    return name
-  if val is None:
-    val = cast_floatX(initializer(shape))
-  else:
-    val = cast_floatX(val)
-  assert(val.shape == shape)
-  params[name] = theano.shared(val)
+  if name not in params:
+    if name is None:
+      name = name_suf(name, '_%d' % len(params))
+    if isinstance(val, theano.tensor.sharedvar.TensorSharedVariable):
+      assert(shape == val.get_value().shape)
+      assert(val.dtype == theano.config.floatX)
+      '''
+      if val.dtype != theano.config.floatX:
+        val = val.astype(theano.config.floatX)
+      '''
+      params[name] = val
+      return name
+    if val is None:
+      val = cast_floatX(initializer(shape))
+    else:
+      val = cast_floatX(val)
+    assert(val.shape == shape)
+    params[name] = theano.shared(val)
   return name
 
 def FCLayer(incoming, params, num_out, activation=nnet.relu, 
@@ -66,6 +67,19 @@ def FCLayer(incoming, params, num_out, activation=nnet.relu,
   if incoming.ndim > 2:
     incoming = incoming.flatten(2)
   return (activation(T.dot(incoming, params[w_name]) + params[b_name]), output_shape)
+
+
+def LinearLayer(incoming, params, num_out, 
+    w_name=None, w=None, w_initializer=init.HeUniform()):
+  incoming, input_shape = incoming
+  num_in = np.prod(input_shape[1:])
+
+  output_shape = (input_shape[0], num_out)
+  w_name = w_name or 'fc_w_%d' % len(params)
+  w_name = add_param((num_in, num_out), params, w_name, w, w_initializer)
+  if incoming.ndim > 2:
+    incoming = incoming.flatten(2)
+  return (T.dot(incoming, params[w_name]), output_shape)
 
 
 def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None, filter_name=None,
@@ -526,3 +540,11 @@ def ConcatLayer(incomings, axis=1):
       return shapes[0]
   output_shape = concat_shape(input_shapes, axis)
   return (T.concatenate(ins, axis), output_shape)
+
+def TemporalEncodeLayer(incoming, params, T_name=None, T_val=None, T_init=init.HeUniform()):
+  incoming, input_shape = incoming
+  output_shape = input_shape
+  T_name = add_param(input_shape[-2:], params, name=T_name, val=T_val, initializer=T_init)
+  output = incoming + params[T_name]
+  return (output, output_shape)
+
