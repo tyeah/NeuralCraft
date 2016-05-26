@@ -2,49 +2,8 @@ import re
 from collections import Counter
 
 
-def getIfExists(dictionary, key):
+def get_or_return_UNKNOWN(dictionary, key):
     return dictionary.get(key, dictionary['<UNKNOWN>'])
-
-
-class Context:
-    def __init__(self, string, dictionary):
-        self.string = string
-        self.dictionary = dictionary
-
-    def toIndex(self):
-        return [getIfExists(self.dictionary, w) for w in self.string]
-
-    def __repr__(self):
-        return ' '.join(self.string)
-
-
-class Question:
-    def __init__(self, question, answer, dictionary):
-        self.question = question
-        self.answer = answer
-        self.evidences = []
-        self.dictionary = dictionary
-
-    def toIndex(self):
-        return {'question': [getIfExists(self.dictionary, w)
-                             for w in self.question],
-                'answer': getIfExists(self.dictionary, self.answer)}
-
-    def __repr__(self):
-        return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(
-            ' '.join(self.question), self.answer, str(self.evidences))
-
-
-class Story(object):
-    """docstring for Story"""
-
-    def __init__(self):
-        self.contexts = []
-        self.questions = []
-
-    def __repr__(self):
-        return '< Q&A Story with {} context sentences, {} questions >'.format(
-            len(self.contexts), len(self.questions))
 
 
 class QAReader:
@@ -149,4 +108,45 @@ class QAReader:
 
     def __repr__(self):
         return '< Q&A Reader with {} stories. Vocab size = {} >'.format(
-                    len(self.stories), len(self.index_to_word))
+            len(self.stories), len(self.index_to_word))
+
+
+class Context:
+    def __init__(self, string, dictionary):
+        self.string = string
+        self.dictionary = dictionary
+
+    def toIndex(self):
+        return [get_or_return_UNKNOWN(self.dictionary, w) for w in self.string]
+
+    def __repr__(self):
+        return ' '.join(self.string)
+
+
+class Question:
+    def __init__(self, question, answer, dictionary):
+        self.question = question
+        self.answer = answer
+        self.evidences = []
+        self.dictionary = dictionary
+
+    def toIndex(self):
+        return {'question': [get_or_return_UNKNOWN(self.dictionary, w)
+                             for w in self.question],
+                'answer': get_or_return_UNKNOWN(self.dictionary, self.answer)}
+
+    def __repr__(self):
+        return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(
+            ' '.join(self.question), self.answer, str(self.evidences))
+
+
+class Story(object):
+    """docstring for Story"""
+
+    def __init__(self):
+        self.contexts = []
+        self.questions = []
+
+    def __repr__(self):
+        return '< Q&A Story with {} context sentences, {} questions >'.format(
+            len(self.contexts), len(self.questions))
