@@ -136,7 +136,7 @@ class MemN2N_Model(Model):
         at = T.ivector()
 
         lr = T.scalar()
-        opt_options = {'lr': lr}
+        opt_options = {'lr': lr, 'clip_norm': 40}
 
         u_in = (ut, u_shape)
         c_in = (ct, c_shape)
@@ -153,18 +153,18 @@ class MemN2N_Model(Model):
         for nh in range(n_hops):
           if nh == 0:
             net['u_emb_%d' % nh] = layers.EmbeddingLayer(
-                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.05))
+                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.1))
             net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] * umaskt[:, :, None], net['u_emb_%d' % nh][1])
             net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.05))
+                c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.1))
             net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['a_emb_%d' % nh][1])
             net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
             if te:
               net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
             net['c_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.05))
+                c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.1))
             net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['c_emb_%d' % nh][1])
             net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
@@ -199,12 +199,12 @@ class MemN2N_Model(Model):
         net['ou'] = layers.ElementwiseCombineLayer(
           (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
 
-        net['output'] = layers.FCLayer(net['ou'],
+        net['output'] = layers.LinearLayer(net['ou'],
                                        self.params,
                                        vs,
                                        activation=T.nnet.softmax,
                                        w_name='w_fc',
-                                       b_name='b_fc')
+                                       w_initializer=init.Gaussian(sigma=0.1))
 
         print net.keys()
         pred_prob = theano.function(

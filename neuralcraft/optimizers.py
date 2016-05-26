@@ -8,7 +8,15 @@ def sgd(cost, incomings, params, options):
   #incomings should be a list
   '''
   lr = options.get('lr', 1e-2)
+  clip_norm = options.get('clip_norm', None)
   grads = T.grad(cost, params.values())
+  if clip_norm != None:
+    l2_norm = [T.sqrt(T.sum(g**2)) for g in grads]
+    for i in range(len(grads)):
+      grads[i] = T.switch(l2_norm[i] > clip_norm,
+          grads[i] * clip_norm / l2_norm[i],
+          grads[i])
+      
 
   updates = []
   for p, g in zip(params.values(), grads):
@@ -88,10 +96,18 @@ def rmsprop(cost, incomings, params, options):
   incomings should be a list
   '''
   lr = options.get('lr', 1e-2)
+  clip_norm = options.get('clip_norm', None)
   dr = options.get('dr', 0.95) #decay rate
   epsilon = options.get('epsilon', 1e-8)
 
   grads = T.grad(cost, params.values())
+  if clip_norm != None:
+    l2_norm = [T.sqrt(T.sum(g**2)) for g in grads]
+    for i in range(len(grads)):
+      grads[i] = T.switch(l2_norm[i] > clip_norm,
+          grads[i] * clip_norm / l2_norm[i],
+          grads[i])
+
   cache = [theano.shared(cast_floatX(np.zeros_like(p.get_value()))) for p in params.values()]
   updates = []
   def c_update(c, g):

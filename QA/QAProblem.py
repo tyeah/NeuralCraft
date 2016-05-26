@@ -132,11 +132,10 @@ class QATask(object):
                 test_pred = self.model.pred(c, cmask, u, umask)
                 test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
-                if test_acc / test_acc_old <= 0.9:
+                
+                if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
                     lr *= self.oo['decay']
                     print "lr decays to %f" % lr
-                    if lr <= 1e-5:
-                        break
                 print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
                                                                     test_acc)
                 if epoch_idx >= max_epoch:
