@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 3,
+        "task_number": 1,
         "language": "en",
         "reader": "QAReader"
     },
@@ -35,7 +35,7 @@
         "embedding_size": 20,
         "num_hid": 32,
         "vocab_size": null,
-        "n_hops": 2,
+        "n_hops": 1,
         "position_encode": false,
         "temporal_encode": false
     }

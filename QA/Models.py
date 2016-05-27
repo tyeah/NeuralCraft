@@ -217,6 +217,6 @@ class MemN2N_Model(Model):
         update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
                                 self.params, opt_options)
 
-        attention = [theano.function([ct, cmaskt, ut, umaskt], net['attention_%d' % nh]) for nh in range(n_hops)]
+        attention = [theano.function([ct, cmaskt, ut, umaskt], net['attention_%d' % nh][0], allow_input_downcast=True) for nh in range(n_hops)]
 
         self.pred_prob, self.pred, self.update, self.attention = pred_prob, pred, update, attention

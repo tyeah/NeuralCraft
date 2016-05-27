@@ -136,7 +136,7 @@ class Question:
         return {'question': [get_or_return_UNKNOWN(self.dictionary, w)
                              for w in self.question],
                 'answer': get_or_return_UNKNOWN(self.dictionary, self.answer),
-                'evidence_indexes': self.evidence_indexes}
+                'evidence_indices': self.evidence_indexes}
 
     def __repr__(self):
         return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(

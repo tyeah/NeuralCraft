@@ -108,9 +108,14 @@ class QATask(object):
         #test_acc = 0
         train_acc = 0
         while (True):
-            c, cmask, u, umask, a = next(train_batch)
+            c, cmask, u, umask, a, evidence = next(train_batch)
             #print u
             train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
+            if iter_idx % 40 == 0:
+                #print evidence, [np.argmax(att(c, cmask, u, umask), axis=1) for att in self.model.attention]
+                att_val = [att(c, cmask, u, umask) for att in self.model.attention]
+                att_label_val = np.array([[val[i][evidence[i]] for i in range(len(evidence))] for val in att_val])
+                print evidence, [np.argmax(val, axis=1) for val in att_val], att_label_val
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
             '''
@@ -127,11 +132,11 @@ class QATask(object):
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
                                                         iters_in_epoch)
                 cost_acc = 0
-                #c, cmask, u, umask, a = next(train_batch)
+                #c, cmask, u, umask, a, evidence = next(train_batch)
                 #train_pred = self.model.pred(c, cmask, u, umask)
                 #train_acc = np.mean(train_pred == a)
                 train_acc /= iters_in_epoch
-                c, cmask, u, umask, a = next(test_batch)
+                c, cmask, u, umask, a, evidence = next(test_batch)
                 test_pred = self.model.pred(c, cmask, u, umask)
                 #test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
@@ -190,14 +195,15 @@ class QATask(object):
             #print batch_idx
             start = end
             stories = [qa.stories[idx] for idx in batch_idx]
-            questions = [np.random.choice(st.questions) for st in stories]
-            #questions = [st.questions[0] for st in stories]
+            #questions = [np.random.choice(st.questions) for st in stories]
+            questions = [st.questions[0] for st in stories]
             ret_c = np.array([context_process([c.toIndex() for c in st.contexts
                                                ]) for st in stories])
             ret_q = np.array([sentence_process(q.toIndex()['question'])
                               for q in questions])
             ret_a = np.array([q.toIndex()['answer'] for q in questions])
-            yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a)
+            ret_e = [q.toIndex()['evidence_indices'] for q in questions]
+            yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a, ret_e)
 
 
 def preprocess_options(options, disp=False):
