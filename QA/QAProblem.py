@@ -113,6 +113,7 @@ class QATask(object):
             train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
             if iter_idx % 40 == 0:
                 #print evidence, [np.argmax(att(c, cmask, u, umask), axis=1) for att in self.model.attention]
+                evidence = [[ee - 1 for ee in e ] for e in evidence]
                 att_val = [att(c, cmask, u, umask) for att in self.model.attention]
                 att_label_val = np.array([[val[i][evidence[i]] for i in range(len(evidence))] for val in att_val])
                 print evidence, [np.argmax(val, axis=1) for val in att_val], att_label_val

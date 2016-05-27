@@ -1,8 +1,8 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 1,
-        "language": "en",
+        "task_number": 2,
+        "language": "en-10k",
         "reader": "QAReader"
     },
     "log_options": {
@@ -30,7 +30,7 @@
     },
     "model_options": {
         "model_name": "memn2n",
-        "context_length": 16,
+        "context_length": 64,
         "sentence_length": 20,
         "embedding_size": 20,
         "num_hid": 32,
