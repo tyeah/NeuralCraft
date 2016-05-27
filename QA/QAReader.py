@@ -73,6 +73,7 @@ class QAReader:
                     word_counter[answer] += 1
                     quest = Question(question, answer, self.word_to_index)
                     for evid in map(int, evidences.split()):
+                        quest.evidence_indexes.append(evid)
                         quest.evidences.append(context_id_mapping[evid])
                     story.questions.append(quest)
                 else:
@@ -128,12 +129,14 @@ class Question:
         self.question = question
         self.answer = answer
         self.evidences = []
+        self.evidence_indexes = []
         self.dictionary = dictionary
 
     def toIndex(self):
         return {'question': [get_or_return_UNKNOWN(self.dictionary, w)
                              for w in self.question],
-                'answer': get_or_return_UNKNOWN(self.dictionary, self.answer)}
+                'answer': get_or_return_UNKNOWN(self.dictionary, self.answer),
+                'evidence_indexes': self.evidence_indexes}
 
     def __repr__(self):
         return '<Question: {}\n Answer: {}\n Supporting fact: {}>'.format(
