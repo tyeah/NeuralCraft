@@ -98,9 +98,9 @@ class QATask(object):
         lr = self.oo['learning_rate']
         disp_iter = self.oo['disp_iter']
         train_batch = self.minibatch(self.qa_train,
-                                     self.oo['batch_size_train'], True)
+                                     self.oo['batch_size_train'], self.oo['shuffle'])
         test_batch = self.minibatch(self.qa_test, self.oo['batch_size_test'],
-                                    True)
+                                    self.oo['shuffle'])
         print 'Starting training...'
         epoch_idx = 0
         iter_idx = 0
@@ -109,6 +109,7 @@ class QATask(object):
         train_acc = 0
         while (True):
             c, cmask, u, umask, a = next(train_batch)
+            #print u
             train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
@@ -186,9 +187,11 @@ class QATask(object):
                 batch_idx.extend(data_idx[0:end])
             else:
                 batch_idx = data_idx[start:end]
+            #print batch_idx
             start = end
             stories = [qa.stories[idx] for idx in batch_idx]
             questions = [np.random.choice(st.questions) for st in stories]
+            #questions = [st.questions[0] for st in stories]
             ret_c = np.array([context_process([c.toIndex() for c in st.contexts
                                                ]) for st in stories])
             ret_q = np.array([sentence_process(q.toIndex()['question'])

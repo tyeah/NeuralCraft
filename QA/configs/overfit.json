@@ -1,0 +1,35 @@
+{
+    "data_options": {
+        "train_path": "bAbI/exp/overfit_train.txt",
+        "test_path": "bAbI/exp/overfit_train.txt",
+        "reader": "QAReader",
+        "word_to_index": null
+    },
+    "log_options": {
+        "dump_params": true,
+        "dump_path": "weights/memn2n/",
+        "dump_name": "memn2n.pkl",
+        "dump_epoch": -1,
+        "dump_config": false
+    },
+    "optimization_options": {
+        "learning_rate": 0.05,
+        "batch_size_train": 1,
+        "batch_size_test": 1,
+        "optimizer": "rmsprop",
+        "max_epoch": 50,
+        "verbose": true,
+        "disp_iter": 50000,
+        "decay": 0.95,
+        "load_params": false,
+        "load_path": "weights/memn2n/memn2n.pkl"
+    },
+    "model_options": {
+        "model_name": "memn2n",
+        "context_length": 16,
+        "sentence_length": 32,
+        "embedding_size": 32,
+        "num_hid": 32,
+        "vocab_size": null
+    }
+}

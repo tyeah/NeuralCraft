@@ -160,3 +160,14 @@ def adam(cost, incomings, params, options):
     return theano.function(incomings + [lr], cost, updates=updates, allow_input_downcast=True)
   else:
     return theano.function(incomings, cost, updates=updates, allow_input_downcast=True)
+
+def get_optimizer(opt_name):
+  optimizers_dict = {
+      'sgd': sgd,
+      'momentum': momentum,
+      'nesterov_momentum': nesterov_momentum,
+      'adagrad': adagrad,
+      'rmsprop': rmsprop,
+      'adam': adam
+      }
+  return optimizers_dict[opt_name]

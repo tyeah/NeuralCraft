@@ -1,7 +1,7 @@
 {
     "data_options": {
-        "data_path": "bAbI",
-        "task_number": 3,
+        "data_path": "bAbI_10",
+        "task_number": 1,
         "language": "en",
         "reader": "QAReader"
     },
@@ -13,10 +13,10 @@
     },
     "optimization_options": {
         "learning_rate": 0.01,
-        "batch_size_train": 32,
+        "batch_size_train": 10,
         "batch_size_test": null,
         "optimizer": "rmsprop",
-        "max_epoch": 400,
+        "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
         "decay": 1.0,
@@ -26,7 +26,7 @@
         "load_name": "memn2n.pkl",
         "dump_params": true,
         "dump_name": "memn2n.pkl",
-        "shuffle": true
+        "shuffle": false
     },
     "model_options": {
         "model_name": "memn2n",

@@ -12,14 +12,12 @@ def model(model_name):
     return models[model_name]
 
 
+
 class Model(object):
     def __init__(self, options):
         self.oo = options['optimization_options']
         self.mo = options['model_options']
-        if self.oo['optimizer'] == 'sgd':
-            self.optimizer = optimizers.sgd
-        elif self.oo['optimizer'] == 'rmsprop':
-            self.optimizer = optimizers.rmsprop
+        self.optimizer = optimizers.get_optimizer(self.oo['optimizer'])
         self.params = {}
 
     def load_params(self, path):
@@ -171,7 +169,7 @@ class MemN2N_Model(Model):
             if te:
               net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
 
-            net['o_%d' % nh] = layers.MemLayer(
+            net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
                 (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
                  net['c_combine_%d' % nh]), self.params)
           else:
@@ -192,7 +190,7 @@ class MemN2N_Model(Model):
             if te:
               net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
 
-            net['o_%d' % nh] = layers.MemLayer(
+            net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
                 (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
                  net['c_combine_%d' % nh]), self.params)
 
@@ -219,4 +217,6 @@ class MemN2N_Model(Model):
         update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
                                 self.params, opt_options)
 
-        self.pred_prob, self.pred, self.update = pred_prob, pred, update
+        attention = [theano.function([ct, cmaskt, ut, umaskt], net['attention_%d' % nh]) for nh in range(n_hops)]
+
+        self.pred_prob, self.pred, self.update, self.attention = pred_prob, pred, update, attention
