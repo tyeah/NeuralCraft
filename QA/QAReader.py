@@ -65,6 +65,8 @@ class QAReader:
                         self.stories.append(story)
                     story = Story()
                     context_id_mapping = {}
+                    true_index = 0
+                    index_id_mapping = {}
 
                 if '?' in string:  # this is a question
                     question, answer, evidences = string.split('\t')
@@ -73,7 +75,7 @@ class QAReader:
                     word_counter[answer] += 1
                     quest = Question(question, answer, self.word_to_index)
                     for evid in map(int, evidences.split()):
-                        quest.evidence_indexes.append(evid)
+                        quest.evidence_indexes.append(index_id_mapping[evid])
                         quest.evidences.append(context_id_mapping[evid])
                     story.questions.append(quest)
                 else:
@@ -81,6 +83,8 @@ class QAReader:
                     word_counter.update(context)
                     con = Context(context, self.word_to_index)
                     context_id_mapping[id] = con
+                    index_id_mapping[id] = true_index
+                    true_index += 1
                     story.contexts.append(con)
             if story is not None:  # last story
                 self.stories.append(story)
