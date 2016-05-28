@@ -1,3 +1,6 @@
+# TODO: weight sharing
+# TODO: why randomly sampling quetion doesn't work?
+# TODO: Position Encoding!
 import os
 import argparse
 from pathlib2 import Path
@@ -113,10 +116,11 @@ class QATask(object):
             train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
             if iter_idx % 40 == 0:
                 #print evidence, [np.argmax(att(c, cmask, u, umask), axis=1) for att in self.model.attention]
-                evidence = [[ee - 1 for ee in e ] for e in evidence]
                 att_val = [att(c, cmask, u, umask) for att in self.model.attention]
                 att_label_val = np.array([[val[i][evidence[i]] for i in range(len(evidence))] for val in att_val])
-                print evidence, [np.argmax(val, axis=1) for val in att_val], att_label_val
+                #print evidence, [np.argmax(val, axis=1) for val in att_val], att_label_val
+                print [np.sum(av < 0.01) for av in att_val]
+                print (cmask.sum(axis=-1) == 0).sum()
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
             '''
@@ -141,6 +145,9 @@ class QATask(object):
                 test_pred = self.model.pred(c, cmask, u, umask)
                 #test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
+                if 'linear_start' in self.oo.keys():
+                    if epoch_idx == 40:
+                        self.model.linear.set_value(0.)
                 
                 if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
                     lr *= self.oo['decay']
@@ -183,6 +190,7 @@ class QATask(object):
             m[:len(context), :] = cm[:, 1]
             return c, m
 
+        #q_idx = np.random.randint(4)
         while (True):
             end = start + batch_size
             if end >= data_size:
@@ -191,13 +199,15 @@ class QATask(object):
                 if (shuffle):
                     np.random.shuffle(data_idx)
                 batch_idx.extend(data_idx[0:end])
+                #q_idx = np.random.randint(4)
             else:
                 batch_idx = data_idx[start:end]
             #print batch_idx
             start = end
             stories = [qa.stories[idx] for idx in batch_idx]
-            #questions = [np.random.choice(st.questions) for st in stories]
-            questions = [st.questions[0] for st in stories]
+            questions = [np.random.choice(st.questions) for st in stories]
+            #q_idx = 0
+            #questions = [st.questions[q_idx] for st in stories]
             ret_c = np.array([context_process([c.toIndex() for c in st.contexts
                                                ]) for st in stories])
             ret_q = np.array([sentence_process(q.toIndex()['question'])

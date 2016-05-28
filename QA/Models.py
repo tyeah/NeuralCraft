@@ -139,6 +139,7 @@ class MemN2N_Model(Model):
         u_in = (ut, u_shape)
         c_in = (ct, c_shape)
         a_in = (at, a_shape)
+        self.linear = theano.shared(1.)
 
         '''
         if pe:
@@ -171,7 +172,7 @@ class MemN2N_Model(Model):
 
             net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
                 (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
-                 net['c_combine_%d' % nh]), self.params)
+                 net['c_combine_%d' % nh]), self.params, self.linear)
           else:
             net['u_combine_%d' % nh] = layers.LinearLayer(net['u_combine_%d' % (nh - 1)], self.params, es, w_name='H')
             net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer((net['u_combine_%d' % nh], net['o_%d' % (nh-1)]), T.add)
@@ -192,7 +193,7 @@ class MemN2N_Model(Model):
 
             net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
                 (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
-                 net['c_combine_%d' % nh]), self.params)
+                 net['c_combine_%d' % nh]), self.params, self.linear)
 
         net['ou'] = layers.ElementwiseCombineLayer(
           (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
