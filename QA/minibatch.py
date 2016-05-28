@@ -135,7 +135,7 @@ class MinibatchReader(QAReader):
 
 if __name__ == '__main__':
     # test
-    ar = ApproximateReader('bAbI/en/qa1_single-supporting-fact_test.txt', 10, 32)
+    ar = MinibatchReader('bAbI/en/qa1_single-supporting-fact_test.txt', 10, 32)
     # print "qa1 contains %d questions" % len(ar.stories)
     # for s in ar.stories[:10]:
     #     print "Question: ", s.questions[0]
@@ -144,4 +144,5 @@ if __name__ == '__main__':
     #         print c
     #     print "Evidence indexes: ", s.questions[0].evidence_indexes
     #     print
-    ar.minibatch()
+    batch = ar.minibatch()
+    print next(batch)
