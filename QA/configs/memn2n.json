@@ -12,7 +12,7 @@
         "dump_config": false
     },
     "optimization_options": {
-        "learning_rate": 0.01,
+        "learning_rate": 0.001,
         "batch_size_train": 32,
         "batch_size_test": null,
         "optimizer": "rmsprop",
@@ -23,11 +23,11 @@
         "decay_period": 25,
         "weight_path": "weights/memn2n",
         "load_params": true,
-        "load_name": "memn2n_q_com.pkl",
+        "load_name": "memn2n.pkl",
         "dump_params": true,
         "dump_name": "memn2n.pkl",
         "shuffle": true,
-        "linear_start": true
+        "linear_start": false
     },
     "model_options": {
         "model_name": "memn2n",
@@ -38,6 +38,7 @@
         "vocab_size": null,
         "n_hops": 3,
         "position_encode": false,
-        "temporal_encode": true
+        "temporal_encode": true,
+        "AB_share": true
     }
 }

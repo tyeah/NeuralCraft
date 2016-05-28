@@ -145,7 +145,7 @@ class QATask(object):
                 test_pred = self.model.pred(c, cmask, u, umask)
                 #test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
-                if 'linear_start' in self.oo.keys():
+                if 'linear_start' in self.oo.keys() and self.oo['linear_start']:
                     if epoch_idx == 40:
                         self.model.linear.set_value(0.)
                 

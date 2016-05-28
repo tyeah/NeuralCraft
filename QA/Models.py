@@ -147,12 +147,13 @@ class MemN2N_Model(Model):
           Jc = T.sum(cmaskt, axis=2)
           #PEu = 
         '''
+        B_name = 'A' if self.mo['AB_share'] else 'B'
 
         net = {}
         for nh in range(n_hops):
           if nh == 0:
             net['u_emb_%d' % nh] = layers.EmbeddingLayer(
-                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.1))
+                u_in, self.params, vs, es, w_name=B_name, initializer=init.Gaussian(sigma=0.1))
             net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] * umaskt[:, :, None], net['u_emb_%d' % nh][1])
             net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
@@ -205,7 +206,6 @@ class MemN2N_Model(Model):
                                        w_name='w_fc',
                                        w_initializer=init.Gaussian(sigma=0.1))
 
-        print net.keys()
         pred_prob = theano.function(
             [ct, cmaskt, ut, umaskt],
             net['output'][0], allow_input_downcast=True)
