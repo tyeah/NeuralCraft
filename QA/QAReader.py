@@ -40,7 +40,8 @@ class QAReader:
                  threshold=3,
                  segmenter=None,
                  dictionaries=None,
-                 include_testset_vocab=True):
+                 include_testset_vocab=True,
+                 **kws):
         if not segmenter:
             segmenter = self.segment
 

@@ -10,9 +10,10 @@ from time import time
 import numpy as np
 
 from QAReader import QAReader
+from minibatch import MinibatchReader
 import Models
 
-def read_dataset(data_path, task_num, lang, Reader):
+def read_dataset(data_path, task_num, lang, Reader, extra_options):
     bAbI_base = Path(data_path)
     data_base = bAbI_base / lang
     if 1 <= task_num <= 20:
@@ -23,9 +24,8 @@ def read_dataset(data_path, task_num, lang, Reader):
         # "train" is lexicographically behind "test"
         test_fn, train_fn = tuple(map(lambda fn: str(data_base / fn), sorted(
             filter(lambda fn: fn.startswith('qa%d_' % task_num), files))))
-        train_set = Reader(train_fn, threshold=0)
-        test_set = Reader(test_fn,
-                        dictionaries=train_set.getDictionaries())
+        train_set = Reader(train_fn, **extra_options)
+        test_set = Reader(test_fn,                       dictionaries=train_set.getDictionaries(), **extra_options)
         # This below recreates the situation of experiment.py
         # test_set = Reader(train_fn, dictionaries=train_set.getDictionaries())
     else:
@@ -36,12 +36,19 @@ def read_dataset(data_path, task_num, lang, Reader):
 class QATask(object):
     def __init__(self, options):
         self.do = options['data_options']
+        self.mo = options['model_options']
+        self.oo = options['optimization_options']
+        self.lo = options['log_options']
+
         data_path = self.do['data_path']
         task_num = self.do['task_number']
         lang = self.do.get('language', 'en')  # defaults to use small Eng set
         self.qa_train, self.qa_test \
             = read_dataset(data_path,
-                           task_num, lang, options['data_options']['reader'])
+                           task_num, lang, options['data_options']['reader'],
+                           {'threshold': 0,
+                            'context_length': self.mo['context_length'],
+                            'sentence_length': self.mo['sentence_length']})
 
         self.data_size = len(self.qa_train.stories)
 
@@ -49,10 +56,6 @@ class QATask(object):
         self.NULL = tokens['<NULL>']
         self.EOS = tokens['<EOS>']
         self.UNKNOWN = tokens['<UNKNOWN>']
-
-        self.mo = options['model_options']
-        self.oo = options['optimization_options']
-        self.lo = options['log_options']
 
         if self.oo['dump_params']:
             weight_dir = Path(self.oo['weight_path'])
@@ -100,9 +103,8 @@ class QATask(object):
         iters_in_epoch = int(self.data_size / self.oo['batch_size_train'])
         lr = self.oo['learning_rate']
         disp_iter = self.oo['disp_iter']
-        train_batch = self.minibatch(self.qa_train,
-                                     self.oo['batch_size_train'], self.oo['shuffle'])
-        test_batch = self.minibatch(self.qa_test, self.oo['batch_size_test'],
+        train_batch = self.qa_train.minibatch(                                   self.oo['batch_size_train'], self.oo['shuffle'])
+        test_batch = self.qa_test.minibatch(self.oo['batch_size_test'],
                                     self.oo['shuffle'])
         print 'Starting training...'
         epoch_idx = 0
@@ -148,7 +150,7 @@ class QATask(object):
                 if 'linear_start' in self.oo.keys() and self.oo['linear_start']:
                     if epoch_idx == 40:
                         self.model.linear.set_value(0.)
-                
+
                 if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
                     lr *= self.oo['decay']
                     print "lr decays to %f" % lr
@@ -159,63 +161,6 @@ class QATask(object):
                 if epoch_idx >= max_epoch:
                     break
         self.model.dump_params(dump_file)
-
-
-    def minibatch(self, qa, batch_size=None, shuffle=True):
-        data_size = len(qa.stories)
-        data_idx = range(data_size)
-        if batch_size == None or batch_size > data_size:
-            batch_size = data_size
-        sen_len = self.mo['sentence_length']
-        ctx_len = self.mo['context_length']
-        start, end = 0, 0
-
-        def sentence_process(sentence):
-            s = np.ones(sen_len) * self.NULL
-            m = np.ones(sen_len) * self.NULL
-            m[:len(sentence)] = 1
-            if len(sentence) >= sen_len:
-                s[:] = sentence[:sen_len]
-            else:
-                s[:len(sentence)] = sentence
-                s[len(sentence)] = self.EOS
-            return s, m
-
-        def context_process(context):
-            c = np.ones((ctx_len, sen_len)) * self.NULL
-            m = np.zeros((ctx_len, sen_len))
-            context = context[:ctx_len]
-            cm = np.array([sentence_process(s) for s in context])
-            c[:len(context), :] = cm[:, 0]
-            m[:len(context), :] = cm[:, 1]
-            return c, m
-
-        #q_idx = np.random.randint(4)
-        while (True):
-            end = start + batch_size
-            if end >= data_size:
-                end %= data_size
-                batch_idx = data_idx[start:data_size]
-                if (shuffle):
-                    np.random.shuffle(data_idx)
-                batch_idx.extend(data_idx[0:end])
-                #q_idx = np.random.randint(4)
-            else:
-                batch_idx = data_idx[start:end]
-            #print batch_idx
-            start = end
-            stories = [qa.stories[idx] for idx in batch_idx]
-            questions = [np.random.choice(st.questions) for st in stories]
-            #q_idx = 0
-            #questions = [st.questions[q_idx] for st in stories]
-            ret_c = np.array([context_process([c.toIndex() for c in st.contexts
-                                               ]) for st in stories])
-            ret_q = np.array([sentence_process(q.toIndex()['question'])
-                              for q in questions])
-            ret_a = np.array([q.toIndex()['answer'] for q in questions])
-            ret_e = [q.toIndex()['evidence_indices'] for q in questions]
-            yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a, ret_e)
-
 
 def preprocess_options(options, disp=False):
     if disp:
@@ -234,7 +179,8 @@ def preprocess_options(options, disp=False):
                   indent=4,
                   sort_keys=False)
 
-    data_readers = {'QAReader': QAReader}
+    data_readers = {'QAReader': QAReader,
+                    'minibatch': MinibatchReader}
 
     options['data_options']['reader'] \
     = data_readers[options['data_options']['reader']]
