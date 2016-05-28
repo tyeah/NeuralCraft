@@ -3,7 +3,7 @@
         "data_path": "bAbI",
         "task_number": 1,
         "language": "en",
-        "reader": "QAReader"
+        "reader": "minibatch"
     },
     "log_options": {
         "dump_epoch": -1,
@@ -22,7 +22,7 @@
         "decay": 0.5,
         "decay_period": 25,
         "weight_path": "weights/memn2n",
-        "load_params": true,
+        "load_params": false,
         "load_name": "memn2n_q_com.pkl",
         "dump_params": true,
         "dump_name": "memn2n.pkl",

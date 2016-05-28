@@ -2,19 +2,24 @@
 
 # import re
 # from collections import Counter
+import numpy as np
 
 from QAReader import *
 
-class ApproximateReader(QAReader):
-    def __init__(self, filename, context_length, segmenter=None, dictionaries=None):
+class MinibatchReader(QAReader):
+    def __init__(self, filename, context_length, sentence_length, segmenter=None, dictionaries=None, **kws):
         if not segmenter:
             segmenter = self.segment
 
         splitter = re.compile('(\d+) (.+)')
         story = None
 
+        self.sentence_length = sentence_length
+        self.context_length = context_length
+
         word_counter = Counter()
         build_dictionary = dictionaries is None
+
         tokens = ['<NULL>', '<EOS>', '<UNKNOWN>']
 
         self.index_to_word = tokens if build_dictionary else dictionaries[0]
@@ -68,15 +73,75 @@ class ApproximateReader(QAReader):
                     self.index_to_word.append(word)
 
             self.specialWords = {w: self.word_to_index[w] for w in tokens}
+            self.NULL = self.specialWords['<NULL>']
+            self.EOS = self.specialWords['<EOS>']
+            self.UNKNOWN = self.specialWords['<UNKNOWN>']
+
+
+    def minibatch(self, batch_size=None, shuffle=True):
+        data_size = len(self.stories)
+        data_idx = range(data_size)
+        if batch_size == None or batch_size > data_size:
+            batch_size = data_size
+        sen_len = self.sentence_length
+        ctx_len = self.context_length
+        start, end = 0, 0
+
+        def sentence_process(sentence):
+            s = np.ones(sen_len) * self.NULL
+            m = np.ones(sen_len) * self.NULL
+            m[:len(sentence)] = 1
+            if len(sentence) >= sen_len:
+                s[:] = sentence[:sen_len]
+            else:
+                s[:len(sentence)] = sentence
+                s[len(sentence)] = self.EOS
+            return s, m
+
+        def context_process(context):
+            c = np.ones((ctx_len, sen_len)) * self.NULL
+            m = np.zeros((ctx_len, sen_len))
+            context = context[:ctx_len]
+            cm = np.array([sentence_process(s) for s in context])
+            c[:len(context), :] = cm[:, 0]
+            m[:len(context), :] = cm[:, 1]
+            return c, m
+
+        #q_idx = np.random.randint(4)
+        while (True):
+            end = start + batch_size
+            if end >= data_size:
+                end %= data_size
+                batch_idx = data_idx[start:data_size]
+                if (shuffle):
+                    np.random.shuffle(data_idx)
+                batch_idx.extend(data_idx[0:end])
+                #q_idx = np.random.randint(4)
+            else:
+                batch_idx = data_idx[start:end]
+            #print batch_idx
+            start = end
+            stories = [self.stories[idx] for idx in batch_idx]
+            questions = [np.random.choice(st.questions) for st in stories]
+            #q_idx = 0
+            #questions = [st.questions[q_idx] for st in stories]
+            ret_c = np.array([context_process([c.toIndex() for c in st.contexts
+                                               ]) for st in stories])
+            ret_q = np.array([sentence_process(q.toIndex()['question'])
+                              for q in questions])
+            ret_a = np.array([q.toIndex()['answer'] for q in questions])
+            ret_e = [q.toIndex()['evidence_indices'] for q in questions]
+            yield (ret_c[:, 0], ret_c[:, 1], ret_q[:, 0], ret_q[:, 1], ret_a, ret_e)
 
 if __name__ == '__main__':
     # test
-    ar = ApproximateReader('bAbI/en/qa1_single-supporting-fact_test.txt', 10)
-    print "qa1 contains %d questions" % len(ar.stories)
-    for s in ar.stories[:10]:
-        print "Question: ", s.questions[0]
-        print "Contexts: "
-        for c in s.contexts:
-            print c
-        print "Evidence indexes: ", s.questions[0].evidence_indexes
-        print
+    ar = ApproximateReader('bAbI/en/qa1_single-supporting-fact_test.txt', 10, 32)
+    # print "qa1 contains %d questions" % len(ar.stories)
+    # for s in ar.stories[:10]:
+    #     print "Question: ", s.questions[0]
+    #     print "Contexts: "
+    #     for c in s.contexts:
+    #         print c
+    #     print "Evidence indexes: ", s.questions[0].evidence_indexes
+    #     print
+    ar.minibatch()
