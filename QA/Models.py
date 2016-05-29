@@ -154,7 +154,7 @@ class MemN2N_Model(Model):
         for nh in range(n_hops):
           if nh == 0:
             net['u_emb_%d' % nh] = layers.EmbeddingLayer(
-                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.1))
+                u_in, self.params, vs, es, w_name=B_name, initializer=init.Gaussian(sigma=0.1))
             '''
             if self.oo['dropout']:
               net['u_emb_%d' % nh] = layers.DropoutLayer(net['u_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
