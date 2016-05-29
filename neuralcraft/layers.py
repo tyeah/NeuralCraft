@@ -73,7 +73,7 @@ def FCLayer(incoming, params, num_out, activation=nnet.relu,
 def LinearLayer(incoming, params, num_out, activation=lambda x: x,
     w_name=None, w=None, w_initializer=init.HeUniform()):
   incoming, input_shape = incoming
-  num_in = np.prod(input_shape[1:])
+  num_in = np.prod(input_shape[-1])
 
   #output_shape = (input_shape[0], num_out)
   output_shape = input_shape[:-1] + (num_out,)
@@ -84,7 +84,7 @@ def LinearLayer(incoming, params, num_out, activation=lambda x: x,
     incoming = incoming.flatten(2)
   return (activation(T.dot(incoming, params[w_name])), output_shape)
   '''
-  return (activation(T.tensordot(incoming, params[w_name], axis=[-1, 0])), output_shape)
+  return (activation(T.tensordot(incoming, params[w_name], axes=[len(input_shape)-1, 0])), output_shape)
 
 
 def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None, filter_name=None,
