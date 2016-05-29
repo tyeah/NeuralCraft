@@ -321,7 +321,7 @@ class MemN2N_Model(Model):
 
 class Bidirectional_LSTM(Model):
     def __init__(self, options):
-        super(MemN2N_Model, self).__init__(options)
+        super(Bidirectional_LSTM, self).__init__(options)
 
     def build(self):
         vs = self.mo['vocab_size']
@@ -366,7 +366,7 @@ class Bidirectional_LSTM(Model):
             only_return_final=True)
         net['u_lstm_bidir'] = layers.ConcatLayer(
             (net['u_lstm'],
-             net['u_lstm_rev']), axis=2)
+             net['u_lstm_rev']), axis=1)
         net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es)
         net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
                                                ('x', cl * sl, es))
@@ -376,16 +376,14 @@ class Bidirectional_LSTM(Model):
                                          0.,
                                          self.params,
                                          nh,
-                                         cmaskt_rsp,
-                                         only_return_final=True)
+                                         cmaskt_rsp)
         net['c_lstm_rev'] = layers.LSTMLayer(
             (net['c_emb_rsp'][0][:, ::-1, :], net['c_emb_rsp'][1]),
             0.,
             0.,
             self.params,
             nh,
-            cmaskt_rsp,
-            only_return_final=True)
+            cmaskt_rsp)
         net['c_lstm_bidir'] = layers.ConcatLayer(
             (net['c_lstm'],
              net['c_lstm_rev']), axis=2)

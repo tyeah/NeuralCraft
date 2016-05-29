@@ -27,8 +27,6 @@
         "dump_params": true,
         "dump_name": "memn2n.pkl",
         "shuffle": true,
-        "linear_start": false,
-        "linear_start_lazy": 5,
         "reg": null,
         "reg_weight": 0.004,
         "dropout": false,
