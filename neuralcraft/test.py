@@ -47,6 +47,17 @@ def FCTest():
   f = theano.function([xt[0]], xout[0], allow_input_downcast=True) 
   print f(x)
 
+def LinearTest():
+  x = np.random.randn(batch_size, x_size)
+  xt = T.matrix()
+  xt = (xt, x.shape)
+  params = {}
+  params['w'] = theano.shared(np.arange(x_size * output_size).reshape(x_size, output_size))
+  xout = LinearLayer(xt, params, output_size, w_name='w')
+  f = theano.function([xt[0]], xout[0], allow_input_downcast=True)
+  print f(x)
+  print x.dot(params['w'].get_value())
+
 def RNNTest():
   x = np.random.randn(batch_size, seq_size, x_size)
   mask = np.random.rand(batch_size, seq_size) > 0.5
@@ -137,37 +148,67 @@ def poolingTest():
   print f(x)
 
 def EmbeddingTest():
-  x = np.random.choice(range(vocab_size), [batch_size, x_size])
+  x = np.random.choice(range(vocab_size), [batch_size, seq_size, x_size])
 
-  xt = T.imatrix()
+  xt = T.itensor3()
   xt = (xt, x.shape)
   params = {}
-  yt, y_shape = EmbeddingLayer(xt, params, vocab_size, embedding_size)
-  print y_shape
+  params['E'] = theano.shared(np.arange(vocab_size * embedding_size).reshape(vocab_size, embedding_size))
+  yt, y_shape = EmbeddingLayer(xt, params, vocab_size, embedding_size, w_name='E')
 
   f = theano.function([xt[0]], yt, allow_input_downcast=True)
 
+  print 'x', x.shape
+  print x
+  print 'E', params['E'].get_value().shape
+  print params['E'].get_value()
+  print 'f(x)', f(x).shape
   print f(x)
 
 def MemTest():
   C = np.random.rand(batch_size, seq_size, embedding_size)
   A = np.random.rand(batch_size, seq_size, embedding_size)
   u = np.random.rand(batch_size, embedding_size)
+  #C = np.arange(batch_size * seq_size * embedding_size).reshape(batch_size, seq_size, embedding_size)
+  #A = np.arange(batch_size * seq_size * embedding_size).reshape(batch_size, seq_size, embedding_size)
+  #u = np.arange(batch_size * embedding_size).reshape(batch_size, embedding_size)
 
   Ct = T.tensor3()
   At = T.tensor3()
   ut = T.matrix()
   params = {}
 
-  Ot = MemLayer((ut, u.shape, At, A.shape, Ct, C.shape), params)
-  O = theano.function([ut, At, Ct], Ot[0])
+  '''
+  print '-' * 80
+  print C
+  print A
+  print u
+  #print '-' * 80
+  #print A[0].dot(u[0])
+  #print A[1].dot(u[1])
+  '''
+
+  linear = 1
+  Ot, pt = MemLayer(((ut, u.shape), (At, A.shape), (Ct, C.shape)), params, linear)
+  O = theano.function([ut, At, Ct], Ot[0], on_unused_input='ignore', allow_input_downcast=True)
+  p = theano.function([ut, At, Ct], pt[0], on_unused_input='ignore', allow_input_downcast=True)
+  print '-' * 80
   print O(u, A, C)
+  print p(u, A, C)
 
   def MemNum(u, A, C):
-    p = np.tensordot(A, u, axes=([2], [1]))
-    O = (C * p).sum(axis=1)
-    return O
-  print MemNum(u, A, C)
+    #print A.shape, u.shape
+    #p = np.tensordot(A, u, axes=([2], [1]))
+    p = np.einsum('ijk, ik -> ij', A, u)
+    p_exp = np.exp(p - p.max(1)[:, None])
+    p_softmax = p_exp / p_exp.sum(1)[:, None]
+    #print p.shape
+    O = (C * p[:, :, None]).sum(axis=1)
+    return O, p, p_softmax
+  O, p, p_max = MemNum(u, A, C)
+  print '-' * 80
+  print O
+  print p if linear else p_max
 
 if __name__ == '__main__':
   '''
@@ -177,7 +218,8 @@ if __name__ == '__main__':
   Conv2DTest()
   dropoutTest()
   poolingTest()
-  EmbeddingTest()
   optimizerTest()
-  '''
   MemTest()
+  EmbeddingTest()
+  '''
+  LinearTest()

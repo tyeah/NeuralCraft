@@ -483,12 +483,12 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initi
     #incoming.shape[0], incoming.shape[1], num_out]), output_shape)
 
  
-def MemLayer(incomings, params, linear=False):
+def MemLayer(incomings, params, linear=0):
   '''
   incomings = (u, u_shape, A, A_shape, C, C_shape)
   '''
   ((u, u_shape), (A, A_shape), (C, C_shape)) = incomings
-  p = T.batched_dot(A, u) if linear else nnet.softmax(T.batched_dot(A, u))
+  p = T.switch(linear, T.batched_dot(A, u), nnet.softmax(T.batched_dot(A, u)))
   p_shape = A_shape[:2]
   # C.shape = (batch_size, num_sen, embed_size), u.shape = (batch_size, embed_size)
   # p.shape = (batch_size, num_sen, 1)
