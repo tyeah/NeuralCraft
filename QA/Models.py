@@ -7,10 +7,11 @@ from neuralcraft import layers, optimizers, utils, init, regularizer
 
 
 def model(model_name):
-    models = {'lstm': LSTM_Model, 'memn2n': MemN2N_Model, }
+    models = {'lstm': LSTM_Model,
+              'memn2n': MemN2N_Model,
+              'bi-lstm': Bidirectional_LSTM}
 
     return models[model_name]
-
 
 
 class Model(object):
@@ -98,8 +99,8 @@ class LSTM_Model(Model):
             [ct, cmaskt, ut, umaskt],
             net['output'][0], allow_input_downcast=True)
         pred = theano.function([ct, cmaskt, ut, umaskt],
-                               net['output'][0].argmax(
-                                   axis=1), allow_input_downcast=True)
+                               net['output'][0].argmax(axis=1),
+                               allow_input_downcast=True)
 
         cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
 
@@ -141,100 +142,146 @@ class MemN2N_Model(Model):
         a_in = (at, a_shape)
         self.linear = theano.shared(1.)
         self.use_noise = theano.shared(1.)
-
         '''
         if pe:
           Ju = T.sum(umaskt. axis=1)
           Jc = T.sum(cmaskt, axis=2)
-          #PEu = 
+          #PEu =
         '''
         B_name = 'A' if self.mo['AB_share'] else 'B'
 
         net = {}
         for nh in range(n_hops):
-          if nh == 0:
-            net['u_emb_%d' % nh] = layers.EmbeddingLayer(
-                u_in, self.params, vs, es, w_name=B_name, initializer=init.Gaussian(sigma=0.1))
-            '''
+            if nh == 0:
+                net['u_emb_%d' % nh] = layers.EmbeddingLayer(
+                    u_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name=B_name,
+                    initializer=init.Gaussian(sigma=0.1))
+                '''
             if self.oo['dropout']:
               net['u_emb_%d' % nh] = layers.DropoutLayer(net['u_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
             '''
-            net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] * umaskt[:, :, None], net['u_emb_%d' % nh][1])
-            net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
-            net['a_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.1))
-            '''
+                net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] *
+                                        umaskt[:, :, None], net['u_emb_%d' %
+                                                                nh][1])
+                net['u_combine_%d' % nh] = layers.SumLayer(net[
+                    'u_emb_%d' % nh], axis=1)
+                net['a_emb_%d' % nh] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='A',
+                    initializer=init.Gaussian(sigma=0.1))
+                '''
             if self.oo['dropout']:
               net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
             '''
-            net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
-                            net['a_emb_%d' % nh][1])
-            net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
-            if te:
-              net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
-            net['c_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.1))
-            '''
+                net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['a_emb_%d' % nh][1])
+                net['a_combine_%d' % nh] = layers.SumLayer(net[
+                    'a_emb_%d' % nh], axis=2)
+                if te:
+                    net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(
+                        net['a_combine_%d' % nh],
+                        self.params,
+                        T_name='T_a')
+                net['c_emb_%d' % nh] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='C',
+                    initializer=init.Gaussian(sigma=0.1))
+                '''
             if self.oo['dropout']:
               net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
             '''
-            net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
-                            net['c_emb_%d' % nh][1])
-            net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
-            if te:
-              net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
+                net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['c_emb_%d' % nh][1])
+                net['c_combine_%d' % nh] = layers.SumLayer(net[
+                    'c_emb_%d' % nh], axis=2)
+                if te:
+                    net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(
+                        net['c_combine_%d' % nh],
+                        self.params,
+                        T_name='T_c')
 
-            net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
-                (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
-                 net['c_combine_%d' % nh]), self.params, self.linear)
-          else:
-            net['u_combine_%d' % nh] = layers.LinearLayer(net['u_combine_%d' % (nh - 1)], self.params, es, w_name='H')
-            net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer((net['u_combine_%d' % nh], net['o_%d' % (nh-1)]), T.add)
-            net['a_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='A')
-            '''
+                net['o_%d' % nh], net['attention_%d' % nh] = layers.MemLayer(
+                    (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
+                     net['c_combine_%d' % nh]), self.params, self.linear)
+            else:
+                net['u_combine_%d' % nh] = layers.LinearLayer(net[
+                    'u_combine_%d' % (nh - 1)],
+                                                              self.params,
+                                                              es,
+                                                              w_name='H')
+                net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer(
+                    (net['u_combine_%d' % nh], net['o_%d' % (nh - 1)]), T.add)
+                net['a_emb_%d' % nh] = layers.EmbeddingLayer(
+                    c_in, self.params, vs,
+                    es, w_name='A')
+                '''
             if self.oo['dropout']:
               net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
             '''
-            net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
-                            net['a_emb_%d' % nh][1])
-            net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
-            if te:
-              net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
-            net['c_emb_%d' % nh] = layers.EmbeddingLayer(
-                c_in, self.params, vs, es, w_name='C')
-            '''
+                net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['a_emb_%d' % nh][1])
+                net['a_combine_%d' % nh] = layers.SumLayer(net[
+                    'a_emb_%d' % nh], axis=2)
+                if te:
+                    net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(
+                        net['a_combine_%d' % nh],
+                        self.params,
+                        T_name='T_a')
+                net['c_emb_%d' % nh] = layers.EmbeddingLayer(
+                    c_in, self.params, vs,
+                    es, w_name='C')
+                '''
             if self.oo['dropout']:
               net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
             '''
-            net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
-                            net['c_emb_%d' % nh][1])
-            net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
-            if te:
-              net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(net['c_combine_%d' % nh], self.params, T_name='T_c')
+                net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['c_emb_%d' % nh][1])
+                net['c_combine_%d' % nh] = layers.SumLayer(net[
+                    'c_emb_%d' % nh], axis=2)
+                if te:
+                    net['c_combine_%d' % nh] = layers.TemporalEncodeLayer(
+                        net['c_combine_%d' % nh],
+                        self.params,
+                        T_name='T_c')
 
-            net['o_%d' % nh], net['attention_%d' %nh] = layers.MemLayer(
-                (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
-                 net['c_combine_%d' % nh]), self.params, self.linear)
+                net['o_%d' % nh], net['attention_%d' % nh] = layers.MemLayer(
+                    (net['u_combine_%d' % nh], net['a_combine_%d' % nh],
+                     net['c_combine_%d' % nh]), self.params, self.linear)
 
         net['ou'] = layers.ElementwiseCombineLayer(
-          (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
+            (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
         if self.oo['dropout']:
-          net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise, self.oo['p_dropout'])
+            net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise,
+                                            self.oo['p_dropout'])
 
-        net['output'] = layers.LinearLayer(net['ou'],
-                                       self.params,
-                                       vs,
-                                       activation=T.nnet.softmax,
-                                       w_name='w_fc',
-                                       w_initializer=init.Gaussian(sigma=0.1))
+        net['output'] = layers.LinearLayer(
+            net['ou'],
+            self.params,
+            vs,
+            activation=T.nnet.softmax,
+            w_name='w_fc',
+            w_initializer=init.Gaussian(sigma=0.1))
 
         pred_prob = theano.function(
             [ct, cmaskt, ut, umaskt],
             net['output'][0], allow_input_downcast=True)
         pred = theano.function([ct, cmaskt, ut, umaskt],
-                               net['output'][0].argmax(
-                                   axis=1), allow_input_downcast=True)
+                               net['output'][0].argmax(axis=1),
+                               allow_input_downcast=True)
 
         cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
 
@@ -246,6 +293,105 @@ class MemN2N_Model(Model):
         update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
                                 self.params, opt_options)
 
-        attention = [theano.function([ct, cmaskt, ut, umaskt], net['attention_%d' % nh][0], allow_input_downcast=True) for nh in range(n_hops)]
+        attention = [theano.function(
+            [ct, cmaskt, ut, umaskt],
+            net['attention_%d' % nh][0], allow_input_downcast=True)
+                     for nh in range(n_hops)]
 
         self.pred_prob, self.pred, self.update, self.attention = pred_prob, pred, update, attention
+
+
+class Bidirectional_LSTM(Model):
+    def __init__(self, options):
+        super(MemN2N_Model, self).__init__(options)
+
+    def build(self):
+        vs = self.mo['vocab_size']
+        es = self.mo['embedding_size']
+        nh = self.mo['num_hid']
+        sl = self.mo['sentence_length']
+        cl = self.mo['context_length']
+
+        u_shape = ('x', sl)
+        c_shape = ('x', cl, sl)
+        a_shape = ('x', )
+
+        ut = T.imatrix()
+        umaskt = T.bmatrix()
+        ct = T.itensor3()
+        cmaskt = T.btensor3()
+        at = T.ivector()
+
+        lr = T.scalar()
+        opt_options = {'lr': lr}
+
+        u_in = (ut, u_shape)
+        c_in = (ct, c_shape)
+        a_in = (at, a_shape)
+
+        net = {}
+        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es)
+        net['u_lstm'] = layers.LSTMLayer(net['u_emb'],
+                                         0.,
+                                         0.,
+                                         self.params,
+                                         nh,
+                                         umaskt,
+                                         only_return_final=True)
+        net['u_lstm_rev'] = layers.LSTMLayer(
+            (net['u_emb'][0][:, ::-1, :], net['u_emb'][1]),
+            0.,
+            0.,
+            self.params,
+            nh,
+            umaskt,
+            only_return_final=True)
+        net['u_lstm_bidir'] = layers.ConcatLayer(
+            (net['u_lstm'],
+             net['u_lstm_rev']), axis=2)
+        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es)
+        net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
+                                               ('x', cl * sl, es))
+        cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
+        net['c_lstm'] = layers.LSTMLayer(net['c_emb_rsp'],
+                                         0.,
+                                         0.,
+                                         self.params,
+                                         nh,
+                                         cmaskt_rsp,
+                                         only_return_final=True)
+        net['c_lstm_rev'] = layers.LSTMLayer(
+            (net['c_emb_rsp'][0][:, ::-1, :], net['c_emb_rsp'][1]),
+            0.,
+            0.,
+            self.params,
+            nh,
+            cmaskt_rsp,
+            only_return_final=True)
+        net['c_lstm_bidir'] = layers.ConcatLayer(
+            (net['c_lstm'],
+             net['c_lstm_rev']), axis=2)
+        net['c_lstm_slice'] = layers.SliceLayer(
+            net['c_lstm_bidir'], axis=1, step=sl)
+        net['c_lstm_mean'] = layers.MeanLayer(net['c_lstm_slice'], axis=1)
+
+        net['concat'] = layers.ConcatLayer(
+            (net['u_lstm_bidir'], net['c_lstm_mean']),
+            axis=1)
+        net['output'] = layers.FCLayer(net['concat'],
+                                       self.params,
+                                       vs,
+                                       activation=T.nnet.softmax)
+        pred_prob = theano.function(
+            [ct, cmaskt, ut, umaskt],
+            net['output'][0], allow_input_downcast=True)
+        pred = theano.function([ct, cmaskt, ut, umaskt],
+                               net['output'][0].argmax(axis=1),
+                               allow_input_downcast=True)
+
+        cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
+
+        update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
+                                self.params, opt_options)
+
+        self.pred_prob, self.pred, self.update = pred_prob, pred, update
