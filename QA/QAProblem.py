@@ -113,18 +113,22 @@ class QATask(object):
         #test_acc = 0
         train_acc = 0
         test_acc_history = []
+        if self.oo['dropout']:
+            self.model.use_noise.set_value(1)
+        if 'linear_start' in self.oo.keys() and not self.oo['linear_start']:
+            self.model.linear.set_value(0.)
         while (True):
             c, cmask, u, umask, a, evidence = next(train_batch)
             #print u
-            train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
+            #train_acc += np.mean(self.model.pred(c, cmask, u, umask) == a)
             '''
-            if iter_idx % 40 == 0:
+            if iter_idx % 120 == 0:
                 #print evidence, [np.argmax(att(c, cmask, u, umask), axis=1) for att in self.model.attention]
                 att_val = [att(c, cmask, u, umask) for att in self.model.attention]
                 att_label_val = np.array([[val[i][evidence[i]] for i in range(len(evidence))] for val in att_val])
-                #print evidence, [np.argmax(val, axis=1) for val in att_val], att_label_val
-                print [np.sum(av < 0.01) for av in att_val]
-                print (cmask.sum(axis=-1) == 0).sum()
+                print evidence, [np.argmax(val, axis=1) for val in att_val]#, att_label_val
+                #print [np.sum(av < 0.01) for av in att_val]
+                #print (cmask.sum(axis=-1) == 0).sum()
             '''
             cost = self.model.update(c, cmask, u, umask, a, lr)
             cost_acc += cost
@@ -142,25 +146,29 @@ class QATask(object):
                 print 'Average cost in epoch %d: %f' % (epoch_idx, cost_acc /
                                                         iters_in_epoch)
                 cost_acc = 0
-                #c, cmask, u, umask, a, evidence = next(train_batch)
-                #train_pred = self.model.pred(c, cmask, u, umask)
-                #train_acc = np.mean(train_pred == a)
-                train_acc /= iters_in_epoch
+                c, cmask, u, umask, a, evidence = next(train_batch)
+                train_pred = self.model.pred(c, cmask, u, umask)
+                train_acc = np.mean(train_pred == a)
+                #train_acc /= iters_in_epoch
                 c, cmask, u, umask, a, evidence = next(test_batch)
+                if self.oo['dropout']:
+                    self.model.use_noise.set_value(0)
                 test_pred = self.model.pred(c, cmask, u, umask)
+                if self.oo['dropout']:
+                    self.model.use_noise.set_value(1)
                 #test_acc_old = test_acc
                 test_acc = np.mean(test_pred == a)
                 test_acc_history.append(test_acc)
-                if 'linear_start' in self.oo.keys() and self.oo['linear_start']:
-                    if test_acc <= np.min(test_acc_history[-(self.oo['linear_start_lazy']+1):-1]):
-                        print "end linear start"
+                print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
+                                                                    test_acc)
+                if 'linear_start' in self.oo.keys() and self.oo['linear_start'] and self.model.linear.get_value() == 1:
+                    if epoch_idx > self.oo['linear_start_lazy'] and test_acc <= np.min(test_acc_history[-(self.oo['linear_start_lazy']+1):-1]):
+                        print '-' * 8 + "End linear start" + '-' * 8
                         self.model.linear.set_value(0.)
 
                 if 0 < epoch_idx <= 100 and epoch_idx % self.oo['decay_period'] == 0:
                     lr *= self.oo['decay']
                     print "lr decays to %f" % lr
-                print 'training accuracy: %f\ttest accuracy: %f' % (train_acc,
-                                                                    test_acc)
                 train_acc = 0
                 epoch_idx += 1
                 if epoch_idx >= max_epoch:
@@ -196,6 +204,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-o', '--options',
         type=str, default="configs/memn2n.json")
+    parser.add_argument(
+        '-t', '--task',
+        type=int, default=0)
     parser.add_argument('-do',
                         '--display_options',
                         dest='display_options',
@@ -207,6 +218,9 @@ if __name__ == '__main__':
     parser.set_defaults(display_options=True)
     args = parser.parse_args()
     options = json.load(open(args.options, 'r'))
+    if args.task > 0:
+        options['data_options']['task_number'] = args.task
+        options['optimization_options']['dump_name'] = "memn2n_%d.pkl" % args.task
     preprocess_options(options, args.display_options)
 
     exp = QATask(options)

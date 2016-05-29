@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 6,
+        "task_number": 2,
         "language": "en",
         "reader": "QAReader"
     },
@@ -28,7 +28,11 @@
         "dump_name": "memn2n.pkl",
         "shuffle": true,
         "linear_start": false,
-        "linear_start_lazy": 10
+        "linear_start_lazy": 5,
+        "reg": null,
+        "reg_weight": 0.004,
+        "dropout": false,
+        "p_dropout": 0.5
     },
     "model_options": {
         "model_name": "memn2n",

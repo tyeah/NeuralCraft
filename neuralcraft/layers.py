@@ -16,6 +16,7 @@ import numpy as np
 import utils
 from utils import cast_floatX
 import init
+from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 def name_suf(name, suffix):
   if name == None:
@@ -117,7 +118,7 @@ def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None,
   return (output, output_shape)
 
 
-def dropoutLayer(incoming, use_noise, trng, p):
+def DropoutLayer(incoming, use_noise, p):
   """
   tensor switch is like an if statement that checks the
   value of the theano shared variable (use_noise) (we can also use 0/1), 
@@ -125,6 +126,7 @@ def dropoutLayer(incoming, use_noise, trng, p):
   computing the appropriate activation. During training/testing
   use_noise is toggled on and off.
   """
+  trng = RandomStreams(1234)
   incoming, input_shape = incoming
   output_shape = input_shape
   proj = T.switch(use_noise,
@@ -136,7 +138,7 @@ def dropoutLayer(incoming, use_noise, trng, p):
   return (proj, output_shape)
 
 
-def poolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, padding=0, mode='max'):
+def PoolingLayer(incoming, ds_h, ds_w=None, stride_h=None, stride_w=None, padding=0, mode='max'):
   '''
   2D pooling
   '''

@@ -3,7 +3,7 @@ import pickle
 import theano
 from theano import tensor as T
 
-from neuralcraft import layers, optimizers, utils, init
+from neuralcraft import layers, optimizers, utils, init, regularizer
 
 
 def model(model_name):
@@ -140,6 +140,7 @@ class MemN2N_Model(Model):
         c_in = (ct, c_shape)
         a_in = (at, a_shape)
         self.linear = theano.shared(1.)
+        self.use_noise = theano.shared(1.)
 
         '''
         if pe:
@@ -153,11 +154,19 @@ class MemN2N_Model(Model):
         for nh in range(n_hops):
           if nh == 0:
             net['u_emb_%d' % nh] = layers.EmbeddingLayer(
-                u_in, self.params, vs, es, w_name=B_name, initializer=init.Gaussian(sigma=0.1))
+                u_in, self.params, vs, es, w_name='B', initializer=init.Gaussian(sigma=0.1))
+            '''
+            if self.oo['dropout']:
+              net['u_emb_%d' % nh] = layers.DropoutLayer(net['u_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+            '''
             net['u_emb_%d' % nh] = (net['u_emb_%d' % nh][0] * umaskt[:, :, None], net['u_emb_%d' % nh][1])
             net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.1))
+            '''
+            if self.oo['dropout']:
+              net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+            '''
             net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['a_emb_%d' % nh][1])
             net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
@@ -165,6 +174,10 @@ class MemN2N_Model(Model):
               net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
             net['c_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.1))
+            '''
+            if self.oo['dropout']:
+              net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+            '''
             net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['c_emb_%d' % nh][1])
             net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
@@ -179,6 +192,10 @@ class MemN2N_Model(Model):
             net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer((net['u_combine_%d' % nh], net['o_%d' % (nh-1)]), T.add)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='A')
+            '''
+            if self.oo['dropout']:
+              net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+            '''
             net['a_emb_%d' % nh] = (net['a_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['a_emb_%d' % nh][1])
             net['a_combine_%d' % nh] = layers.SumLayer(net['a_emb_%d' % nh], axis=2)
@@ -186,6 +203,10 @@ class MemN2N_Model(Model):
               net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
             net['c_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='C')
+            '''
+            if self.oo['dropout']:
+              net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+            '''
             net['c_emb_%d' % nh] = (net['c_emb_%d' % nh][0] * cmaskt[:, :, :, None],
                             net['c_emb_%d' % nh][1])
             net['c_combine_%d' % nh] = layers.SumLayer(net['c_emb_%d' % nh], axis=2)
@@ -198,6 +219,8 @@ class MemN2N_Model(Model):
 
         net['ou'] = layers.ElementwiseCombineLayer(
           (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
+        if self.oo['dropout']:
+          net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise, self.oo['p_dropout'])
 
         net['output'] = layers.LinearLayer(net['ou'],
                                        self.params,
@@ -214,6 +237,11 @@ class MemN2N_Model(Model):
                                    axis=1), allow_input_downcast=True)
 
         cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
+
+        if self.oo['reg'] == 'l2':
+            cost += self.oo['reg_weight'] * regularizer.l2(self.params)
+        elif self.oo['reg'] == 'l1':
+            cost += self.oo['reg_weight'] * regularizer.l1(self.params)
 
         update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
                                 self.params, opt_options)
