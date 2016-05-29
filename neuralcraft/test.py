@@ -44,7 +44,7 @@ def FCTest():
   xt = (xt, x.shape)
   params = {}
   xout = FCLayer(xt, params, output_size)
-  f = theano.function([xt[0]], xout[0], allow_input_downcast=True) 
+  f = theano.function([xt[0]], xout[0], allow_input_downcast=True)
   print f(x)
 
 def LinearTest():
@@ -120,7 +120,7 @@ def Conv2DTest():
   yt = T.ivector()
   params = {}
   cnnout = Conv2DLayer(xt, params, hid_channel_size, filter_size)
-  f = theano.function([xt[0]], cnnout[0], allow_input_downcast=True) 
+  f = theano.function([xt[0]], cnnout[0], allow_input_downcast=True)
   print f(x).shape, cnnout[1]
   print f(x)
 
@@ -131,7 +131,7 @@ def dropoutTest():
   xt = (xt, x.shape)
   use_noise = T.bscalar()
   yt, _ = dropoutLayer(xt, use_noise, trng, dropout_p)
-  f = theano.function([xt[0], use_noise], yt, allow_input_downcast=True) 
+  f = theano.function([xt[0], use_noise], yt, allow_input_downcast=True)
 
   x = np.random.randn(batch_size, seq_size, x_size)
   print f(x, True)
@@ -142,7 +142,7 @@ def poolingTest():
   xt = T.tensor3()
   xt = (xt, x.shape)
   yt, pool_shape = poolingLayer(xt, ds_h=2)
-  f = theano.function([xt[0]], yt, allow_input_downcast=True) 
+  f = theano.function([xt[0]], yt, allow_input_downcast=True)
 
   print pool_shape
   print f(x)
@@ -210,6 +210,17 @@ def MemTest():
   print O
   print p if linear else p_max
 
+def SliceTest():
+    x = np.random.randn(2, 9, 3)
+    xt = T.tensor3()
+
+    yt, ytshape = SliceLayer((xt, x.shape), axis=1, step=3)
+    yf = theano.function([xt], yt, allow_input_downcast=True)
+    
+    assert np.array_equal(yf(x), x[:, ::3, :])
+
+
+
 if __name__ == '__main__':
   '''
   FCTest()
@@ -221,5 +232,6 @@ if __name__ == '__main__':
   optimizerTest()
   MemTest()
   EmbeddingTest()
-  '''
   LinearTest()
+  '''
+  SliceTest()

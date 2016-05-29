@@ -1,7 +1,7 @@
 '''
 To use this module, one need to define input tensors and an empty dictionary params = {}
-Every layer function receives a tuple of (tensor expressions, input shape), params and param names and layer 
-definition options defines shared variables and places them in params. return another 
+Every layer function receives a tuple of (tensor expressions, input shape), params and param names and layer
+definition options defines shared variables and places them in params. return another
 (tensor expression(s), output_shape)
 when defining a net, alwayse use 1 as batch_size, which will not influence the actual net
 '''
@@ -54,8 +54,8 @@ def add_param(shape, params, name=None, val=None, initializer=init.HeUniform()):
     params[name] = theano.shared(val)
   return name
 
-def FCLayer(incoming, params, num_out, activation=nnet.relu, 
-    w_name=None, b_name=None, w=None, b=None, 
+def FCLayer(incoming, params, num_out, activation=nnet.relu,
+    w_name=None, b_name=None, w=None, b=None,
     w_initializer=init.HeUniform(), b_initializer=init.Const(0.)):
   incoming, input_shape = incoming
   num_in = np.prod(input_shape[1:])
@@ -90,7 +90,7 @@ def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None,
   incoming shoule be a tensor4: (batch_size, channel_size, height, width)
   filter should be None or ndarray or shared
   here num_in == channel_size. how to infer automatically?
-  ''' 
+  '''
   incoming, input_shape = incoming
   num_in, input_h, input_w = input_shape[-3:]
 
@@ -106,14 +106,14 @@ def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None,
       filter.shape==(num_out, incoming.shape[1], filter_h, filter_w))\
       or (isinstance(filter, theano.tensor.sharedvar.TensorSharedVariable) and \
       filter.get_value().shape==(num_out, incoming.shape[1], filter_h, filter_w))
-  filter_name = add_param((num_out, num_in, filter_h, filter_w), 
+  filter_name = add_param((num_out, num_in, filter_h, filter_w),
       params, filter_name or 'conv2d_filter_%d' % len(params), filter, w_initializer)
   if padding == 'half':
     output_h, output_w = input_h, input_w
   else:
     raise NotImplementedError("not implemented output shape for padding patterns other than 'half'")
   output_shape = (input_shape[0], num_out, output_h, output_w)
-  output = activation(nnet.conv2d(incoming, params[filter_name], border_mode=padding, 
+  output = activation(nnet.conv2d(incoming, params[filter_name], border_mode=padding,
     subsample=(stride_h, stride_w)))
   return (output, output_shape)
 
@@ -121,7 +121,7 @@ def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None,
 def DropoutLayer(incoming, use_noise, p):
   """
   tensor switch is like an if statement that checks the
-  value of the theano shared variable (use_noise) (we can also use 0/1), 
+  value of the theano shared variable (use_noise) (we can also use 0/1),
   before either dropping out the incoming tensor or
   computing the appropriate activation. During training/testing
   use_noise is toggled on and off.
@@ -207,7 +207,7 @@ def RNNLayer(incoming, hid_init, params, num_hidden, mask=None, activation=nnet.
     return (results.dimshuffle((1, 0, 2)), output_shape)
 
 
-def LSTMLayer_seqfirst_lisa(incoming, cell_init, hid_init, params, num_hidden, 
+def LSTMLayer_seqfirst_lisa(incoming, cell_init, hid_init, params, num_hidden,
     W, U, b, W_name='lstm_W', U_name='lstm_U', b_name='lstm_b',
     mask=None, activation=T.tanh, gate_act=nnet.sigmoid, only_return_final=False):
   '''
@@ -484,7 +484,7 @@ def EmbeddingLayer(incoming, params, num_in, num_out, w_name=None, w=None, initi
   #return (params[w_name][incoming.flatten()].reshape([
     #incoming.shape[0], incoming.shape[1], num_out]), output_shape)
 
- 
+
 def MemLayer(incomings, params, linear=0):
   '''
   incomings = (u, u_shape, A, A_shape, C, C_shape)
@@ -507,6 +507,12 @@ def SumLayer(incoming, axis=1):
   output_shape = tuple(input_shape[:axis] + input_shape[(axis+1):])
   return (ret, output_shape)
 
+def MeanLayer(incoming, axis=1):
+  incoming, input_shape = incoming
+  ret = incoming.mean(axis = axis)
+  input_shape = list(input_shape)
+  output_shape = tuple(input_shape[:axis] + input_shape[(axis+1):])
+  return (ret, output_shape)
 
 def ElementwiseCombineLayer(incomings, fn=T.add):
   ((u, u_shape), (v, v_shape)) = incomings
@@ -522,6 +528,17 @@ def ReshapeLayer(incoming, shape_after):
     output = incoming.reshape([-1] + list(shape_after)[1:])
   else:
     output = layer[0].reshape(shape_after)
+  return (output, shape_after)
+
+
+def SliceLayer(incoming, axis=0, step=2):
+  incoming, input_shape = incoming
+  slicing = (slice(None),) * axis + (slice(None, None, step),)
+  output = incoming[ slicing ]
+
+  input_shape = list(input_shape)
+  input_shape[axis] = int(input_shape[axis] / step)
+  shape_after = tuple(input_shape)
   return (output, shape_after)
 
 
@@ -550,4 +567,3 @@ def TemporalEncodeLayer(incoming, params, T_name=None, T_val=None, T_init=init.H
   T_name = add_param(input_shape[-2:], params, name=T_name, val=T_val, initializer=T_init)
   output = incoming + params[T_name]
   return (output, output_shape)
-
