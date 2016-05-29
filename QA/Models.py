@@ -142,12 +142,12 @@ class MemN2N_Model(Model):
         self.linear = theano.shared(1.)
         self.use_noise = theano.shared(1.)
 
-        '''
         if pe:
-          Ju = T.sum(umaskt. axis=1)
-          Jc = T.sum(cmaskt, axis=2)
-          #PEu = 
-        '''
+            J = sl
+            d = es
+            PE_row = T.arange(1, J+1, dtype=theano.config.floatX)
+            PE_column = T.arange(1, d+1, dtype=theano.config.floatX)
+            PE = (1.0 - PE_row / J)[:, None] - (PE_column / d)[None, :] * (1.0 - 2 * PE_row / J)[:, None]
         B_name = 'A' if self.mo['AB_share'] else 'B'
 
         net = {}
@@ -155,6 +155,9 @@ class MemN2N_Model(Model):
           if nh == 0:
             net['u_emb_%d' % nh] = layers.EmbeddingLayer(
                 u_in, self.params, vs, es, w_name=B_name, initializer=init.Gaussian(sigma=0.1))
+            if pe:
+                net['u_emb_%d' % nh] = list(net['u_emb_%d' % nh])
+                net['u_emb_%d' % nh][0] *= PE[None, :, :]
             '''
             if self.oo['dropout']:
               net['u_emb_%d' % nh] = layers.DropoutLayer(net['u_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
@@ -163,6 +166,9 @@ class MemN2N_Model(Model):
             net['u_combine_%d' % nh] = layers.SumLayer(net['u_emb_%d' % nh], axis=1)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='A', initializer=init.Gaussian(sigma=0.1))
+            if pe:
+                net['a_emb_%d' % nh] = list(net['a_emb_%d' % nh])
+                net['a_emb_%d' % nh][0] *= PE[None, None, :, :]
             '''
             if self.oo['dropout']:
               net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
@@ -174,6 +180,9 @@ class MemN2N_Model(Model):
               net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
             net['c_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='C', initializer=init.Gaussian(sigma=0.1))
+            if pe:
+                net['c_emb_%d' % nh] = list(net['c_emb_%d' % nh])
+                net['c_emb_%d' % nh][0] *= PE[None, None, :, :]
             '''
             if self.oo['dropout']:
               net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
@@ -192,6 +201,9 @@ class MemN2N_Model(Model):
             net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer((net['u_combine_%d' % nh], net['o_%d' % (nh-1)]), T.add)
             net['a_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='A')
+            if pe:
+                net['a_emb_%d' % nh] = list(net['a_emb_%d' % nh])
+                net['a_emb_%d' % nh][0] *= PE[None, None, :, :]
             '''
             if self.oo['dropout']:
               net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
@@ -203,6 +215,9 @@ class MemN2N_Model(Model):
               net['a_combine_%d' % nh] = layers.TemporalEncodeLayer(net['a_combine_%d' % nh], self.params, T_name='T_a')
             net['c_emb_%d' % nh] = layers.EmbeddingLayer(
                 c_in, self.params, vs, es, w_name='C')
+            if pe:
+                net['c_emb_%d' % nh] = list(net['c_emb_%d' % nh])
+                net['c_emb_%d' % nh][0] *= PE[None, None, :, :]
             '''
             if self.oo['dropout']:
               net['c_emb_%d' % nh] = layers.DropoutLayer(net['c_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])

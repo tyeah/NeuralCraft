@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 1,
+        "task_number": 6,
         "language": "en",
         "reader": "minibatch"
     },
@@ -44,6 +44,6 @@
         "n_hops": 3,
         "position_encode": false,
         "temporal_encode": true,
-        "AB_share": false
+        "AB_share": true
     }
 }
