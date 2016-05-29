@@ -75,12 +75,16 @@ def LinearLayer(incoming, params, num_out, activation=lambda x: x,
   incoming, input_shape = incoming
   num_in = np.prod(input_shape[1:])
 
-  output_shape = (input_shape[0], num_out)
+  #output_shape = (input_shape[0], num_out)
+  output_shape = input_shape[:-1] + (num_out,)
   w_name = w_name or 'fc_w_%d' % len(params)
   w_name = add_param((num_in, num_out), params, w_name, w, w_initializer)
+  '''
   if incoming.ndim > 2:
     incoming = incoming.flatten(2)
   return (activation(T.dot(incoming, params[w_name])), output_shape)
+  '''
+  return (activation(T.tensordot(incoming, params[w_name], axis=[-1, 0])), output_shape)
 
 
 def Conv2DLayer(incoming, params, num_out, filter_h, filter_w=None, filter=None, filter_name=None,
