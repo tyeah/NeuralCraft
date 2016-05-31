@@ -220,7 +220,8 @@ if __name__ == '__main__':
     options = json.load(open(args.options, 'r'))
     if args.task > 0:
         options['data_options']['task_number'] = args.task
-        options['optimization_options']['dump_name'] = "memn2n_%d.pkl" % args.task
+        options['optimization_options']['dump_name'] = \
+            options["model_options"]["model_name"] + "_%d.pkl" % args.task
     preprocess_options(options, args.display_options)
 
     exp = QATask(options)

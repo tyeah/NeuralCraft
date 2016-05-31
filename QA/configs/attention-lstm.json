@@ -1,8 +1,8 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 1,
-        "language": "en",
+        "task_number": 20,
+        "language": "en-10k",
         "reader": "minibatch"
     },
     "log_options": {
@@ -16,8 +16,8 @@
         "batch_size_train": 32,
         "batch_size_test": null,
         "optimizer": "rmsprop",
-        "max_epoch": 200,
-        "verbose": false,
+        "max_epoch": 5,
+        "verbose": true,
         "disp_iter": 20,
         "decay": 0.9,
         "decay_period": 5,
@@ -38,7 +38,7 @@
         "sentence_length": 16,
         "m_size": 64,
         "g_size": 64,
-        "embedding_size": 32,
+        "embedding_size": 20,
         "num_hid": 16,
         "vocab_size": null,
         "sentence_level_att": true
