@@ -8,7 +8,7 @@
     "log_options": {
         "dump_epoch": -1,
         "dump_path": "configs",
-        "dump_name": "memn2n.json",
+        "dump_name": "lstm.json",
         "dump_config": false
     },
     "optimization_options": {
@@ -21,11 +21,11 @@
         "disp_iter": 20,
         "decay": 0.5,
         "decay_period": 25,
-        "weight_path": "weights/memn2n",
+        "weight_path": "weights/lstm",
         "load_params": false,
-        "load_name": "memn2n.pkl",
+        "load_name": "lstm.pkl",
         "dump_params": true,
-        "dump_name": "memn2n.pkl",
+        "dump_name": "lstm.pkl",
         "shuffle": true,
         "reg": null,
         "reg_weight": 0.004,
@@ -39,9 +39,6 @@
         "embedding_size": 20,
         "num_hid": 32,
         "vocab_size": null,
-        "n_hops": 3,
-        "position_encode": false,
-        "temporal_encode": true,
-        "AB_share": false
+        "n_hops": 2
     }
 }

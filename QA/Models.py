@@ -51,6 +51,7 @@ class LSTM_Model(Model):
         nh = self.mo['num_hid']
         sl = self.mo['sentence_length']
         cl = self.mo['context_length']
+        n_hops = self.mo['n_hops']
 
         u_shape = ('x', sl)
         c_shape = ('x', cl, sl)
@@ -70,7 +71,7 @@ class LSTM_Model(Model):
         a_in = (at, a_shape)
 
         net = {}
-        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es)
+        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es, w_name='E')
         net['u_lstm'] = layers.LSTMLayer(net['u_emb'],
                                          0.,
                                          0.,
@@ -78,20 +79,30 @@ class LSTM_Model(Model):
                                          nh,
                                          umaskt,
                                          only_return_final=True)
-        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es)
+        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es, w_name='E')
         net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
                                                ('x', cl * sl, es))
         cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
-        net['c_lstm'] = layers.LSTMLayer(net['c_emb_rsp'],
-                                         0.,
-                                         0.,
-                                         self.params,
-                                         nh,
-                                         cmaskt_rsp,
-                                         only_return_final=True)
+        for i in range(n_hops):
+            if i == 0:
+                net['c_lstm_%d' % i] = layers.LSTMLayer(net['c_emb_rsp'],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp)
+            else:
+                net['c_lstm_%d_in' % i] = layers.ConcatLayer(
+                        (net['c_emb_rsp'], net['c_lstm_%d'%(i-1)]), axis=2)
+                net['c_lstm_%d'%i] = layers.LSTMLayer(net['c_lstm_%d_in'%i],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp)
+        c_lstm_concat = tuple([(net['c_lstm_%d'%i][0][:, -1, :], ('x', nh))  for i in range(n_hops)])
         net['concat'] = layers.ConcatLayer(
-            (net['c_lstm'],
-             net['u_lstm']), axis=1)
+            c_lstm_concat+(net['u_lstm'],), axis=1)
         net['output'] = layers.FCLayer(net['concat'],
                                        self.params,
                                        vs,
@@ -349,7 +360,7 @@ class Bidirectional_LSTM(Model):
         a_in = (at, a_shape)
 
         net = {}
-        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es)
+        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es, w_name='E')
         net['u_lstm'] = layers.LSTMLayer(net['u_emb'],
                                          0.,
                                          0.,
@@ -363,12 +374,12 @@ class Bidirectional_LSTM(Model):
             0.,
             self.params,
             nh,
-            umaskt,
+            umaskt[:, ::-1],
             only_return_final=True)
         net['u_lstm_bidir'] = layers.ConcatLayer(
             (net['u_lstm'],
              net['u_lstm_rev']), axis=1)
-        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es)
+        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es, w_name='E')
         net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
                                                ('x', cl * sl, es))
         cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
@@ -384,7 +395,7 @@ class Bidirectional_LSTM(Model):
             0.,
             self.params,
             nh,
-            cmaskt_rsp)
+            cmaskt_rsp[:, ::-1])
         net['c_lstm_bidir'] = layers.ConcatLayer(
             (net['c_lstm'],
              net['c_lstm_rev']), axis=2)
@@ -425,6 +436,7 @@ class Attention_LSTM(Model):
         nh = self.mo['num_hid']
         sl = self.mo['sentence_length']
         cl = self.mo['context_length']
+        sla = self.mo['sentence_level_att']
 
         u_shape = ('x', sl)
         c_shape = ('x', cl, sl)
@@ -443,8 +455,10 @@ class Attention_LSTM(Model):
         c_in = (ct, c_shape)
         a_in = (at, a_shape)
 
+        self.use_noise = theano.shared(1.)
+
         net = {}
-        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es)
+        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es, w_name='E')
         net['u_lstm'] = layers.LSTMLayer(net['u_emb'],
                                          0.,
                                          0.,
@@ -458,12 +472,12 @@ class Attention_LSTM(Model):
             0.,
             self.params,
             nh,
-            umaskt,
+            umaskt[:, ::-1],
             only_return_final=True)
         net['u_lstm_bidir'] = layers.ConcatLayer(
             (net['u_lstm'],
              net['u_lstm_rev']), axis=1)
-        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es)
+        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es, w_name='E')
         net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
                                                ('x', cl * sl, es))
         cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
@@ -479,28 +493,57 @@ class Attention_LSTM(Model):
             0.,
             self.params,
             nh,
-            cmaskt_rsp)
-        net['c_lstm_bidir'] = layers.ConcatLayer(
-            (net['c_lstm'],
-             net['c_lstm_rev']), axis=2)
-        net['c_lstm_slice'] = layers.SliceLayer(
-            net['c_lstm_bidir'], axis=1, step=sl)
-
-        # print net['u_lstm_bidir'][1]
-        net['Wu'] = layers.LinearLayer(net['u_lstm_bidir'], self.params, ms, w_name='Wyu')
-        net['Wc'] = layers.LinearLayer(net['c_lstm_slice'], self.params, ms,
-        w_name='Wym')
-        broadcast_u = net['Wu'][0][:,None,:], net['Wc'][1]
-        net['Wu+Wc'] = layers.ElementwiseCombineLayer((broadcast_u, net['Wc']))
-        net['m'] = T.tanh(net['Wu+Wc'][0]), net['Wu+Wc'][1]
-        net['wTm'] = layers.ReshapeLayer(
-                     layers.LinearLayer(net['m'], self.params, 1), ('x', cl))
-        s, sshape = T.nnet.softmax(net['wTm'][0]), net['wTm'][1]
-        net['r'] = T.sum(s[:, :, None] * net['c_lstm_slice'][0], axis=1), \
-                   ('x', nh * 2)
+            cmaskt_rsp[:, ::-1])
+        if sla:
+            net['c_lstm_slice_forward'] = layers.SliceLayer(
+                net['c_lstm'], axis=1, step=sl, start=sl-1)
+            net['c_lstm_slice_backward'] = layers.SliceLayer(
+                net['c_lstm_rev'], axis=1, step=sl, start=0)
+            net['c_lstm_slice'] = layers.ConcatLayer(
+                    (net['c_lstm_slice_forward'], net['c_lstm_slice_backward']), axis=2)
+            if self.oo['dropout']:
+                net['u_lstm_bidir'] = layers.DropoutLayer(net['u_lstm_bidir'], self.use_noise,
+                                                self.oo['p_dropout'])
+                net['c_lstm_slice'] = layers.DropoutLayer(net['c_lstm_slice'], self.use_noise,
+                                                self.oo['p_dropout'])
+            net['Wu'] = layers.LinearLayer(net['u_lstm_bidir'], self.params, ms)
+            net['Wc'] = layers.LinearLayer(net['c_lstm_slice'], self.params, ms)
+            broadcast_u = net['Wu'][0][:,None,:], net['Wc'][1]
+            net['Wu+Wc'] = layers.ElementwiseCombineLayer((broadcast_u, net['Wc']))
+            net['m'] = T.tanh(net['Wu+Wc'][0]), net['Wu+Wc'][1]
+            net['wTm'] = layers.ReshapeLayer(
+                         layers.LinearLayer(net['m'], self.params, 1), ('x', cl))
+            s, sshape = T.nnet.softmax(net['wTm'][0]), net['wTm'][1]
+            net['r'] = T.sum(s[:, :, None] * net['c_lstm_slice'][0], axis=1), \
+                       ('x', nh * 2)
+        else:
+            net['c_lstm_bidir'] = layers.ConcatLayer(
+                (net['c_lstm'],
+                 net['c_lstm_rev']), axis=2)
+            if self.oo['dropout']:
+                net['u_lstm_bidir'] = layers.DropoutLayer(net['u_lstm_bidir'], self.use_noise,
+                                                self.oo['p_dropout'])
+                net['c_lstm_bidir'] = layers.DropoutLayer(net['c_lstm_bidir'], self.use_noise,
+                                                self.oo['p_dropout'])
+            net['Wu'] = layers.LinearLayer(net['u_lstm_bidir'], self.params, ms)
+            net['Wc'] = layers.LinearLayer(net['c_lstm_bidir'], self.params, ms)
+            broadcast_u = net['Wu'][0][:,None,:], net['Wc'][1]
+            net['Wu+Wc'] = layers.ElementwiseCombineLayer((broadcast_u, net['Wc']))
+            net['m'] = T.tanh(net['Wu+Wc'][0]), net['Wu+Wc'][1]
+            net['wTm'] = layers.ReshapeLayer(
+                         layers.LinearLayer(net['m'], self.params, 1), ('x', cl * sl))
+            s, sshape = T.nnet.softmax(net['wTm'][0]), net['wTm'][1]
+            net['r'] = T.sum(s[:, :, None] * net['c_lstm_bidir'][0], axis=1), \
+                       ('x', nh * 2)
 
         net['ru'] = layers.ConcatLayer((net['r'], net['u_lstm_bidir']), axis=1)
+        if self.oo['dropout']:
+            net['ru'] = layers.DropoutLayer(net['ru'], self.use_noise,
+                                            self.oo['p_dropout'])
         net['g'] = layers.LinearLayer(net['ru'], self.params, gs, activation=T.tanh)
+        if self.oo['dropout']:
+            net['g'] = layers.DropoutLayer(net['g'], self.use_noise,
+                                            self.oo['p_dropout'])
 
         net['output'] = layers.FCLayer(net['g'],
                                        self.params,
@@ -514,6 +557,11 @@ class Attention_LSTM(Model):
                                allow_input_downcast=True)
 
         cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
+
+        if self.oo['reg'] == 'l2':
+            cost += self.oo['reg_weight'] * regularizer.l2(self.params)
+        elif self.oo['reg'] == 'l1':
+            cost += self.oo['reg_weight'] * regularizer.l1(self.params)
 
         update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
                                 self.params, opt_options)

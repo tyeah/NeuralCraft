@@ -535,13 +535,13 @@ def ReshapeLayer(incoming, shape_after):
   return (output, shape_after)
 
 
-def SliceLayer(incoming, axis=0, step=2):
+def SliceLayer(incoming, axis=0, step=2, start=0):
   incoming, input_shape = incoming
-  slicing = (slice(None),) * axis + (slice(None, None, step),)
+  slicing = (slice(None),) * axis + (slice(start, None, step),)
   output = incoming[ slicing ]
 
   input_shape = list(input_shape)
-  input_shape[axis] = int(input_shape[axis] / step)
+  input_shape[axis] = int(np.ceil((input_shape[axis] - start) * 1.0 / step))
   shape_after = tuple(input_shape)
   return (output, shape_after)
 
