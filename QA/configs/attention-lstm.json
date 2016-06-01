@@ -6,7 +6,7 @@
         "reader": "minibatch"
     },
     "log_options": {
-        "dump_epoch": -1,
+        "dump_epoch": 5,
         "dump_path": "configs",
         "dump_name": "attention-lstm.json",
         "dump_config": false
@@ -16,7 +16,7 @@
         "batch_size_train": 32,
         "batch_size_test": null,
         "optimizer": "rmsprop",
-        "max_epoch": 5,
+        "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.9,

@@ -50,6 +50,7 @@ class LSTM_Model(Model):
         vs = self.mo['vocab_size']
         es = self.mo['embedding_size']
         nh = self.mo['num_hid']
+        nhu = self.mo['num_hid_u']
         sl = self.mo['sentence_length']
         cl = self.mo['context_length']
         n_hops = self.mo['n_hops']
@@ -77,7 +78,7 @@ class LSTM_Model(Model):
                                          0.,
                                          0.,
                                          self.params,
-                                         nh,
+                                         nhu,
                                          umaskt,
                                          only_return_final=True)
         net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es, w_name='E')
@@ -90,7 +91,7 @@ class LSTM_Model(Model):
                                                  0.,
                                                  0.,
                                                  self.params,
-                                                 nh,
+                                                 nh[i],
                                                  cmaskt_rsp)
             else:
                 net['c_lstm_%d_in' % i] = layers.ConcatLayer(
@@ -99,9 +100,9 @@ class LSTM_Model(Model):
                                                  0.,
                                                  0.,
                                                  self.params,
-                                                 nh,
+                                                 nh[i],
                                                  cmaskt_rsp)
-        c_lstm_concat = tuple([(net['c_lstm_%d'%i][0][:, -1, :], ('x', nh))  for i in range(n_hops)])
+        c_lstm_concat = tuple([(net['c_lstm_%d'%i][0][:, -1, :], ('x', nh[i]))  for i in range(n_hops)])
         net['concat'] = layers.ConcatLayer(
             c_lstm_concat+(net['u_lstm'],), axis=1)
         net['output'] = layers.FCLayer(net['concat'],

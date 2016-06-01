@@ -10,3 +10,4 @@ QA/bAbI*
 QA/weights
 QA/neuralcraft
 setup.sh
+QA/log/backup
