@@ -11,7 +11,8 @@ def model(model_name):
               'memn2n': MemN2N_Model,
               'bi-lstm': Bidirectional_LSTM,
               'att-lstm': Attention_LSTM,
-              'pyramid-lstm': Pyramid_LSTM}
+              'pyramid-lstm': Pyramid_LSTM,
+              'pyramid-attention-lstm': Pyramid_Attention_LSTM}
 
     return models[model_name]
 
@@ -637,6 +638,113 @@ class Pyramid_LSTM(Model):
 
 
         net['g'] = layers.ConcatLayer((net['r'], net['u_lstm']), axis=1)
+        if self.oo['dropout']:
+            net['g'] = layers.DropoutLayer(net['g'], self.use_noise,
+                                            self.oo['p_dropout'])
+
+        net['output'] = layers.FCLayer(net['g'],
+                                       self.params,
+                                       vs,
+                                       activation=T.nnet.softmax)
+        pred_prob = theano.function(
+            [ct, cmaskt, ut, umaskt],
+            net['output'][0], allow_input_downcast=True)
+        pred = theano.function([ct, cmaskt, ut, umaskt],
+                               net['output'][0].argmax(axis=1),
+                               allow_input_downcast=True)
+
+        cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
+
+        if self.oo['reg'] == 'l2':
+            cost += self.oo['reg_weight'] * regularizer.l2(self.params)
+        elif self.oo['reg'] == 'l1':
+            cost += self.oo['reg_weight'] * regularizer.l1(self.params)
+
+        update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
+                                self.params, opt_options)
+
+        self.pred_prob, self.pred, self.update = pred_prob, pred, update
+
+
+class Pyramid_Attention_LSTM(Model):
+    def __init__(self, options):
+        super(Pyramid_Attention_LSTM, self).__init__(options)
+
+    def build(self):
+        vs = self.mo['vocab_size']
+        es = self.mo['embedding_size']
+        ms = self.mo['m_size']
+        gs = self.mo['g_size']
+        nh = self.mo['num_hid']
+        nh2 = self.mo['num_hid_2']
+        sl = self.mo['sentence_length']
+        cl = self.mo['context_length']
+        sla = self.mo['sentence_level_att']
+
+        u_shape = ('x', sl)
+        c_shape = ('x', cl, sl)
+        a_shape = ('x', )
+
+        ut = T.imatrix()
+        umaskt = T.bmatrix()
+        ct = T.itensor3()
+        cmaskt = T.btensor3()
+        at = T.ivector()
+
+        lr = T.scalar()
+        opt_options = {'lr': lr}
+
+        u_in = (ut, u_shape)
+        c_in = (ct, c_shape)
+        a_in = (at, a_shape)
+
+        self.use_noise = theano.shared(1.)
+
+        net = {}
+        net['u_emb'] = layers.EmbeddingLayer(u_in, self.params, vs, es, w_name='E')
+        net['u_lstm'] = layers.LSTMLayer(net['u_emb'],
+                                         0.,
+                                         0.,
+                                         self.params,
+                                         nh,
+                                         umaskt,
+                                         only_return_final=True)
+        net['c_emb'] = layers.EmbeddingLayer(c_in, self.params, vs, es, w_name='E')
+        net['c_emb_rsp'] = layers.ReshapeLayer(net['c_emb'],
+                                               ('x', cl * sl, es))
+        cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
+        net['c_lstm'] = layers.LSTMLayer(net['c_emb_rsp'],
+                                         0.,
+                                         0.,
+                                         self.params,
+                                         nh,
+                                         cmaskt_rsp)
+        if sla:
+            net['c_lstm_slice'] = layers.SliceLayer(
+                net['c_lstm'], axis=1, step=sl, start=sl-1)
+            if self.oo['dropout']:
+                net['u_lstm'] = layers.DropoutLayer(net['u_lstm'], self.use_noise,
+                                                self.oo['p_dropout'])
+                net['c_lstm_slice'] = layers.DropoutLayer(net['c_lstm_slice'], self.use_noise,
+                                                self.oo['p_dropout'])
+            net['Wu'] = layers.LinearLayer(net['u_lstm'], self.params, ms)
+            net['Wc'] = layers.LinearLayer(net['c_lstm_slice'], self.params, ms)
+            broadcast_u = net['Wu'][0][:,None,:], net['Wc'][1]
+            net['Wu+Wc'] = layers.ElementwiseCombineLayer((broadcast_u, net['Wc']))
+            net['m'] = T.tanh(net['Wu+Wc'][0]), net['Wu+Wc'][1]
+            net['wTm'] = layers.ReshapeLayer(
+                         layers.LinearLayer(net['m'], self.params, 1), ('x', cl))
+            s, sshape = T.nnet.softmax(net['wTm'][0]), net['wTm'][1]
+            net['c_lstm_att'] = layers.LSTMLayer((s[:, :, None] * net['c_lstm_slice'][0], ('x', cl, nh)), 
+                0., 0., self.params, nh2, cmaskt[:, :, 0], only_return_final=True)
+            net['c_lstm_final'] = (net['c_lstm'][0][:, -1, :], ('x', nh))
+            net['r'] = layers.ConcatLayer((net['c_lstm_final'], net['c_lstm_att']), axis=1)
+
+        net['ru'] = layers.ConcatLayer((net['r'], net['u_lstm']), axis=1)
+        if self.oo['dropout']:
+            net['ru'] = layers.DropoutLayer(net['ru'], self.use_noise,
+                                            self.oo['p_dropout'])
+        net['g'] = layers.LinearLayer(net['ru'], self.params, gs, activation=T.tanh)
         if self.oo['dropout']:
             net['g'] = layers.DropoutLayer(net['g'], self.use_noise,
                                             self.oo['p_dropout'])

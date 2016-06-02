@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 1,
+        "task_number": 18,
         "language": "en",
         "reader": "minibatch"
     },
@@ -16,18 +16,23 @@
         "batch_size_train": 32,
         "batch_size_test": null,
         "optimizer": "rmsprop",
-        "max_epoch": 100,
+        "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.5,
         "decay_period": 25,
         "weight_path": "weights/memn2n",
         "load_params": false,
-        "load_name": "memn2n_q_com.pkl",
+        "load_name": "memn2n.pkl",
         "dump_params": true,
         "dump_name": "memn2n.pkl",
         "shuffle": true,
-        "linear_start": true
+        "linear_start": false,
+        "linear_start_lazy": 5,
+        "dropout": false,
+        "p_dropout": 0.5,
+        "reg": null,
+        "reg_weight": 0.0002
     },
     "model_options": {
         "model_name": "memn2n",
@@ -37,7 +42,8 @@
         "num_hid": 32,
         "vocab_size": null,
         "n_hops": 3,
-        "position_encode": false,
-        "temporal_encode": true
+        "position_encode": true,
+        "temporal_encode": true,
+        "AB_share": false
     }
 }
