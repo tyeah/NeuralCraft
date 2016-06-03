@@ -504,6 +504,27 @@ def MemLayer(incomings, params, linear=0):
   return ((O, u_shape), (p, p_shape))
 
 
+def AttMemLayer(incomings, params, linear=0, w_name=None, w=None, w_initializer=init.HeUniform()):
+  '''
+  incomings = (u, u_shape, A, A_shape, C, C_shape)
+  '''
+  ((u, u_shape), (A, A_shape), (C, C_shape)) = incomings
+  u_repeat = T.extra_ops.repeat(u.reshape((-1, 1, u_shape[-1])), C_shape[1], 1)
+  Au = T.concatenate((A, u_repeat), axis=2)
+  
+  w_name = w_name or 'AttMem_%d' % len(params)
+  w_name = add_param((C_shape[-1] + u_shape[-1], 1), params, w_name, w, w_initializer)
+  #Aup = T.tensordot(Au, params[w_name], axes=[len(C_shape)-1, 0])
+  #Aup = Aup.reshape((-1, C_shape[1]))
+  #p = nnet.softmax(Aup)
+  p = nnet.softmax(T.tensordot(Au, params[w_name], axes=[len(C_shape)-1, 0]).reshape((-1, C_shape[1])))
+
+  p_shape = A_shape[:2]
+  O = (C * p[:, :, None]).sum(axis = 1)
+
+  return ((O, u_shape), (p, p_shape))
+
+
 def SumLayer(incoming, axis=1):
   incoming, input_shape = incoming
   ret = incoming.sum(axis = axis)
