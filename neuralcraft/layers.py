@@ -525,6 +525,36 @@ def AttMemLayer(incomings, params, linear=0, w_name=None, w=None, w_initializer=
   return ((O, u_shape), (p, p_shape))
 
 
+def MultAttMemLayer(incomings, params, num_hid, linear=0, w_name=None, w=None, w_initializer=None):
+  '''
+  hun_hid should be a tuple with length=len(w_name)-1
+  incomings = (u, u_shape, A, A_shape, C, C_shape)
+  '''
+  if not w_name:
+    _w_name = [None for _ in range(len(num_hid) + 1)]
+  else:
+    _w_name = [wn for wn in w_name]
+  if not w:
+    w = [None for _ in range(len(num_hid) + 1)]
+  if not w_initializer:
+    w_initializer = [init.HeUniform() for _ in range(len(num_hid) + 1)]
+  ((u, u_shape), (A, A_shape), (C, C_shape)) = incomings
+  u_repeat = T.extra_ops.repeat(u.reshape((-1, 1, u_shape[-1])), C_shape[1], 1)
+  Au = T.concatenate((A, u_repeat), axis=2)
+  
+  _num_hid = (C_shape[-1] + u_shape[-1],) + num_hid + (1,)
+  for i, nh in enumerate(_num_hid[:-1]):
+    _w_name[i] = _w_name[i] or 'AttMem_%d' % len(params)
+    _w_name[i] = add_param((nh, _num_hid[i+1]), params, _w_name[i], w[i], w_initializer[i])
+    Au = T.tensordot(Au, params[_w_name[i]], axes=[len(C_shape)-1, 0])
+  p = nnet.softmax(Au.reshape((-1, C_shape[1])))
+
+  p_shape = A_shape[:2]
+  O = (C * p[:, :, None]).sum(axis = 1)
+
+  return ((O, u_shape), (p, p_shape))
+
+
 def SumLayer(incoming, axis=1):
   incoming, input_shape = incoming
   ret = incoming.sum(axis = axis)
