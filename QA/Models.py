@@ -14,7 +14,8 @@ def model(model_name):
               'pyramid-lstm': Pyramid_LSTM,
               'pyramid-attention-lstm': Pyramid_Attention_LSTM,
               'att-memn2n': AttMemN2N_Model,
-              'mult-att-memn2n': MultAttMemN2N_Model}
+              'mult-att-memn2n': MultAttMemN2N_Model,
+              'lstm-memn2n': LSTMMemN2N_Model}
 
     return models[model_name]
 
@@ -1158,6 +1159,232 @@ class MultAttMemN2N_Model(Model):
 
         net['ou'] = layers.ElementwiseCombineLayer(
             (net['o_%d' % nh], net['u_combine_%d' % nh]), T.add)
+        if self.oo['dropout']:
+            net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise,
+                                            self.oo['p_dropout'])
+
+        net['output'] = layers.LinearLayer(
+            net['ou'],
+            self.params,
+            vs,
+            activation=T.nnet.softmax,
+            w_name='w_fc',
+            w_initializer=init.Gaussian(sigma=0.1))
+
+        pred_prob = theano.function(
+            [ct, cmaskt, ut, umaskt],
+            net['output'][0], allow_input_downcast=True)
+        pred = theano.function([ct, cmaskt, ut, umaskt],
+                               net['output'][0].argmax(axis=1),
+                               allow_input_downcast=True)
+
+        cost = T.nnet.categorical_crossentropy(net['output'][0], at).mean()
+
+        if self.oo['reg'] == 'l2':
+            cost += self.oo['reg_weight'] * regularizer.l2(self.params)
+        elif self.oo['reg'] == 'l1':
+            cost += self.oo['reg_weight'] * regularizer.l1(self.params)
+
+        update = self.optimizer(cost, [ct, cmaskt, ut, umaskt, at],
+                                self.params, opt_options)
+
+        attention = [theano.function(
+            [ct, cmaskt, ut, umaskt],
+            net['attention_%d' % nh][0], allow_input_downcast=True)
+                     for nh in range(n_hops)]
+
+        self.pred_prob, self.pred, self.update, self.attention = pred_prob, pred, update, attention
+
+
+class LSTMMemN2N_Model(Model):
+    def __init__(self, options):
+        super(LSTMMemN2N_Model, self).__init__(options)
+
+    def build(self):
+        vs = self.mo['vocab_size']
+        es = self.mo['embedding_size']
+        nh = self.mo['num_hid']
+        sl = self.mo['sentence_length']
+        cl = self.mo['context_length']
+        n_hops = self.mo['n_hops']
+        nh = es
+        pe = self.mo['position_encode']
+        te = self.mo['temporal_encode']
+
+        u_shape = ('x', sl)
+        c_shape = ('x', cl, sl)
+        a_shape = ('x', )
+
+        ut = T.imatrix()
+        umaskt = T.bmatrix()
+        ct = T.itensor3()
+        cmaskt = T.btensor3()
+        cmaskt_rsp = cmaskt.reshape((-1, cl * sl))
+        at = T.ivector()
+
+        lr = T.scalar()
+        opt_options = {'lr': lr, 'clip_norm': 40}
+
+        u_in = (ut, u_shape)
+        c_in = (ct, c_shape)
+        a_in = (at, a_shape)
+        self.linear = theano.shared(1.)
+        self.use_noise = theano.shared(1.)
+
+        B_name = 'A' if self.mo['AB_share'] else 'B'
+        
+        def lstm_name(prefix):
+            lname = {}
+            for gate in ['i', 'f', 'o', 'c']:
+                lname['w_x%s_name' % gate] = prefix + '_w_x%s_name'
+            return lname
+
+
+        net = {}
+        for n_h in range(n_hops):
+            if n_h == 0:
+                net['u_emb_%d' % n_h] = layers.EmbeddingLayer(
+                    u_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name=B_name,
+                    initializer=init.Gaussian(sigma=0.1))
+            # if self.oo['dropout']:
+            #   net['u_emb_%d' % n_h] = layers.DropoutLayer(net['u_emb_%d' % n_h], self.use_noise, self.oo['p_dropout'])
+                net['u_emb_%d' % n_h] = (net['u_emb_%d' % n_h][0] *
+                                        umaskt[:, :, None], net['u_emb_%d' %
+                                                                n_h][1])
+                net['u_combine_%d' % n_h] = layers.LSTMLayer(net['u_emb_%d' % n_h],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 umaskt,
+                                                 only_return_final=True,
+                                                 **lstm_name('B'))
+
+
+                net['a_emb_%d' % n_h] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='A',
+                    initializer=init.Gaussian(sigma=0.1))
+            # if self.oo['dropout']:
+            #   net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+                net['a_emb_%d' % n_h] = (net['a_emb_%d' % n_h][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['a_emb_%d' % n_h][1])
+
+                net['a_emb_rsp_%d' % n_h] = layers.ReshapeLayer(net['a_emb_%d' % n_h],
+                                                       ('x', cl * sl, es))
+                net['a_lstm_%d' % n_h] = layers.LSTMLayer(net['a_emb_rsp_%d' % n_h],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp,
+                                                 **lstm_name('A'))
+                net['a_combine_%d' % n_h] = layers.SliceLayer(
+                    net['a_lstm_%d' % n_h], axis=1, step=sl, start=sl-1)
+
+                net['c_emb_%d' % n_h] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='C',
+                    initializer=init.Gaussian(sigma=0.1))
+            # if self.oo['dropout']:
+            #   net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+                net['c_emb_%d' % n_h] = (net['c_emb_%d' % n_h][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['c_emb_%d' % n_h][1])
+
+                net['c_emb_rsp_%d' % n_h] = layers.ReshapeLayer(net['c_emb_%d' % n_h],
+                                                       ('x', cl * sl, es))
+                net['c_lstm_%d' % n_h] = layers.LSTMLayer(net['c_emb_rsp_%d' % n_h],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp,
+                                                 **lstm_name('C'))
+                net['c_combine_%d' % n_h] = layers.SliceLayer(
+                    net['c_lstm_%d' % n_h], axis=1, step=sl, start=sl-1)
+
+                net['o_%d' % n_h], net['attention_%d' % n_h] = layers.MemLayer(
+                    (net['u_combine_%d' % n_h], net['a_combine_%d' % n_h],
+                     net['c_combine_%d' % n_h]), self.params, self.linear)
+            else:
+                net['u_combine_%d' %
+                    n_h] = layers.LinearLayer(net['u_combine_%d' % (n_h - 1)],
+                                             self.params,
+                                             es,
+                                             w_name='H')
+                net['u_combine_%d' % n_h] = layers.ElementwiseCombineLayer(
+                    (net['u_combine_%d' % n_h], net['o_%d' % (n_h - 1)]), T.add)
+
+
+                net['a_emb_%d' % n_h] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='A',
+                    initializer=init.Gaussian(sigma=0.1))
+            # if self.oo['dropout']:
+            #   net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+                net['a_emb_%d' % n_h] = (net['a_emb_%d' % n_h][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['a_emb_%d' % n_h][1])
+
+                net['a_emb_rsp_%d' % n_h] = layers.ReshapeLayer(net['a_emb_%d' % n_h],
+                                                       ('x', cl * sl, es))
+                net['a_lstm_%d' % n_h] = layers.LSTMLayer(net['a_emb_rsp_%d' % n_h],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp,
+                                                 **lstm_name('A'))
+                net['a_combine_%d' % n_h] = layers.SliceLayer(
+                    net['a_lstm_%d' % n_h], axis=1, step=sl, start=sl-1)
+
+                net['c_emb_%d' % n_h] = layers.EmbeddingLayer(
+                    c_in,
+                    self.params,
+                    vs,
+                    es,
+                    w_name='C',
+                    initializer=init.Gaussian(sigma=0.1))
+            # if self.oo['dropout']:
+            #   net['a_emb_%d' % nh] = layers.DropoutLayer(net['a_emb_%d' % nh], self.use_noise, self.oo['p_dropout'])
+                net['c_emb_%d' % n_h] = (net['c_emb_%d' % n_h][0] *
+                                        cmaskt[:, :, :, None],
+                                        net['c_emb_%d' % n_h][1])
+
+                net['c_emb_rsp_%d' % n_h] = layers.ReshapeLayer(net['c_emb_%d' % n_h],
+                                                       ('x', cl * sl, es))
+                net['c_lstm_%d' % n_h] = layers.LSTMLayer(net['c_emb_rsp_%d' % n_h],
+                                                 0.,
+                                                 0.,
+                                                 self.params,
+                                                 nh,
+                                                 cmaskt_rsp,
+                                                 **lstm_name('C'))
+                net['c_combine_%d' % n_h] = layers.SliceLayer(
+                    net['c_lstm_%d' % n_h], axis=1, step=sl, start=sl-1)
+
+
+                net['o_%d' % n_h], net['attention_%d' % n_h] = layers.MemLayer(
+                    (net['u_combine_%d' % n_h], net['a_combine_%d' % n_h],
+                     net['c_combine_%d' % n_h]), self.params, self.linear)
+
+        net['ou'] = layers.ElementwiseCombineLayer(
+            (net['o_%d' % n_h], net['u_combine_%d' % n_h]), T.add)
         if self.oo['dropout']:
             net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise,
                                             self.oo['p_dropout'])

@@ -16,7 +16,7 @@ import Models
 def read_dataset(data_path, task_num, lang, Reader, extra_options):
     bAbI_base = Path(data_path)
     data_base = bAbI_base / lang
-    if 1 <= task_num <= 20:
+    if 1 <= task_num <= 23:
         try:
             files = os.listdir(str(data_base))
         except OSError:
@@ -25,6 +25,8 @@ def read_dataset(data_path, task_num, lang, Reader, extra_options):
         test_fn, train_fn = tuple(map(lambda fn: str(data_base / fn), sorted(
             filter(lambda fn: fn.startswith('qa%d_' % task_num), files))))
         train_set = Reader(train_fn, **extra_options)
+        extra_options['context_length'] = train_set.context_length
+        extra_options['context_length_percentage'] = 1.0
         test_set = Reader(test_fn,                       dictionaries=train_set.getDictionaries(), **extra_options)
         # This below recreates the situation of experiment.py
         # test_set = Reader(train_fn, dictionaries=train_set.getDictionaries())
@@ -48,9 +50,12 @@ class QATask(object):
                            task_num, lang, options['data_options']['reader'],
                            {'threshold': 0,
                             'context_length': self.mo['context_length'],
+                            'context_length_percentage': self.mo.get('context_length_percentage', 1),
                             'sentence_length': self.mo['sentence_length']})
 
         self.data_size = len(self.qa_train.stories)
+        self.mo['context_length'] = self.qa_train.context_length
+        #self.options['model_options']['context_length'] = self.qa_train.context_length
 
         tokens = self.qa_train.specialWords
         self.NULL = tokens['<NULL>']
@@ -74,6 +79,7 @@ class QATask(object):
         options['model_options']['vocab_size'] = vocab_size
         model_name = self.mo['model_name']
         self.model = Models.model(model_name)(options)
+        self.log("context length: %d" % self.mo['context_length'])
 
     def logger_factory(self):
         def log(s):

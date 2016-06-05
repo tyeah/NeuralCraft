@@ -134,6 +134,7 @@ class MinibatchReader(QAReader):
             return c, m
 
         #q_idx = np.random.randint(4)
+        np.random.shuffle(data_idx)
         while (True):
             end = start + batch_size
             if end >= data_size:

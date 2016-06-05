@@ -1,0 +1,649 @@
+lstm-memn2n
+9551-yetian1  deep1   0    6866s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=1
+9552-yetian1  deep1   1    6863s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=2
+9553-yetian1  deep1   3    6859s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=3
+9554-yetian1  deep2   0    6856s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=4
+9555-yetian1  deep2   1    6852s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=5
+9556-yetian1  deep2   2    6848s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=6
+9557-yetian1  deep2   3    6845s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=7
+9558-yetian1  deep3   0    6841s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=8
+9559-yetian1  deep3   1    6838s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=9
+9560-yetian1  deep3   2    6834s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=10
+9561-yetian1  deep3   3    6830s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=11
+9562-yetian1  deep4   0    6827s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=12
+9563-yetian1  deep4   1    6824s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=13
+9564-yetian1  deep4   2    6820s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=14
+9565-yetian1  deep4   3    6817s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=15
+9566-yetian1  deep5   0    6813s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=16
+9567-yetian1  deep5   1    6810s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=17
+9568-yetian1  deep5   2    6806s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=18
+9569-yetian1  deep6   0    6803s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=19
+9570-yetian1  deep6   1    6799s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=20
+9571-yetian1  deep6   2    6794s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-24                                            DQ_TASK=21
+
+
+
+memn2n-10k
+9496-yetian1  deep1   0    277s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=1
+9497-yetian1  deep1   1    274s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=2
+9498-yetian1  deep1   2    272s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=3
+9499-yetian1  deep1   3    268s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=4
+9500-yetian1  deep2   0    265s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=5
+9501-yetian1  deep2   1    261s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=6
+9502-yetian1  deep2   2    258s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=7
+9503-yetian1  deep2   3    254s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=8
+9504-yetian1  deep3   0    251s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=9
+9505-yetian1  deep3   1    247s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=10
+9506-yetian1  deep3   2    244s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=11
+9507-yetian1  deep3   3    240s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=12
+9508-yetian1  deep4   0    237s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=13
+9509-yetian1  deep4   1    234s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=14
+9510-yetian1  deep4   2    230s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=15
+9511-yetian1  deep4   3    227s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=16
+9512-yetian1  deep5   0    223s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=17
+9513-yetian1  deep5   1    220s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=18
+9514-yetian1  deep5   2    217s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=19
+9515-yetian1  deep6   0    213s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-18                                            DQ_TASK=20
+
+att-memn2n
+Cleaning stale job 9349-yetian1
+Cleaning stale job 9350-yetian1
+Cleaning stale job 9351-yetian1
+Cleaning stale job 9352-yetian1
+Cleaning stale job 9353-yetian1
+Cleaning stale job 9354-yetian1
+Cleaning stale job 9355-yetian1
+Cleaning stale job 9356-yetian1
+Cleaning stale job 9357-yetian1
+Cleaning stale job 9358-yetian1
+Cleaning stale job 9359-yetian1
+Cleaning stale job 9360-yetian1
+Cleaning stale job 9361-yetian1
+Cleaning stale job 9362-yetian1
+Cleaning stale job 9363-yetian1
+Cleaning stale job 9364-yetian1
+Cleaning stale job 9365-yetian1
+Cleaning stale job 9366-yetian1
+Cleaning stale job 9367-yetian1
+Cleaning stale job 9368-yetian1
+Cleaning stale job 9372-yetian1
+Cleaning stale job 9373-yetian1
+
+
+pyramid-att-lstm 10k
+9205-yetian1  deep13  0    535s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=1
+9206-yetian1  deep13  1    532s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=2
+9207-yetian1  deep13  2    528s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=3
+9208-yetian1  deep14  0    525s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=4
+9209-yetian1  deep14  1    521s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=5
+9210-yetian1  deep14  2    518s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=6
+9211-yetian1  deep14  3    514s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=7
+9212-yetian1  deep15  0    511s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=8
+9213-yetian1  deep15  1    507s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=9
+9214-yetian1  deep15  2    504s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=10
+9215-yetian1  deep15  3    501s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=11
+9216-yetian1  deep16  0    497s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=12
+9217-yetian1  deep16  1    494s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=13
+9218-yetian1  deep16  2    490s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=14
+9219-yetian1  deep16  3    487s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16     DQ_TASK=15
+
+
+
+pyramid-att-lstm
+9181-yetian1  deep7   1    477s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=1
+9182-yetian1  deep7   2    474s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=1
+9183-yetian1  deep7   3    471s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=2
+9184-yetian1  deep8   0    468s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=3
+9185-yetian1  deep8   1    464s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=4
+9186-yetian1  deep8   2    461s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=5
+9187-yetian1  deep9   1    458s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=6
+9188-yetian1  deep9   2    454s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=7
+9189-yetian1  deep9   3    451s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=8
+9190-yetian1  deep10  0    448s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=9
+9191-yetian1  deep10  1    445s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=10
+9192-yetian1  deep10  2    441s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=11
+9193-yetian1  deep10  3    438s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=12
+9194-yetian1  deep11  0    435s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=13
+9195-yetian1  deep11  1    432s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=14
+9196-yetian1  deep11  2    428s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=15
+9197-yetian1  deep11  3    425s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=16
+9198-yetian1  deep12  0    422s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=17
+9199-yetian1  deep12  1    418s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=18
+9200-yetian1  deep12  2    415s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=19
+9201-yetian1  deep12  3    411s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=20
+
+
+
+9161-yetian1  deep7   1    146s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=1
+9162-yetian1  deep7   2    140s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=2
+9163-yetian1  deep7   3    137s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=3
+9164-yetian1  deep8   0    133s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=4
+9165-yetian1  deep8   1    130s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=5
+9166-yetian1  deep8   2    127s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=6
+9167-yetian1  deep9   1    124s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=7
+9168-yetian1  deep9   2    120s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=8
+9169-yetian1  deep9   3    117s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=9
+9170-yetian1  deep10  0    114s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=10
+9171-yetian1  deep10  1    110s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=11
+9172-yetian1  deep10  2    107s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=12
+9173-yetian1  deep10  3    104s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=13
+9174-yetian1  deep11  0    100s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=14
+9175-yetian1  deep11  1    97s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=15
+9176-yetian1  deep11  2    93s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=16
+9177-yetian1  deep11  3    89s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=17
+9178-yetian1  deep12  0    85s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=18
+9179-yetian1  deep12  1    81s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=19
+9180-yetian1  deep12  2    77s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=20
+
+
+lstm+memn2n
+9119-yetian1 - (took 10s)
+9120-yetian1 - (took 10s)
+9121-yetian1 - (took 12s)
+9122-yetian1 - (took 9s)
+9123-yetian1 - (took 10s)
+9124-yetian1 - (took 9s)
+9125-yetian1 - (took 9s)
+9126-yetian1 - (took 10s)
+9127-yetian1 - (took 9s)
+9128-yetian1 - (took 9s)
+9129-yetian1 - (took 9s)
+9130-yetian1 - (took 9s)
+9131-yetian1 - (took 9s)
+9132-yetian1 - (took 10s)
+9133-yetian1 - (took 9s)
+9134-yetian1 - (took 10s)
+9135-yetian1 - (took 9s)
+9136-yetian1 - (took 9s)
+9137-yetian1 - (took 10s)
+9138-yetian1 - (took 9s)
+9139-yetian1 - (took 9s)
+9140-yetian1 - (took 10s)
+9141-yetian1 - (took 295s)
+9142-yetian1 - (took 270s)
+9143-yetian1 - (took 287s)
+9144-yetian1 - (took 272s)
+9145-yetian1 - (took 246s)
+9146-yetian1 - (took 249s)
+9147-yetian1 - (took 247s)
+9148-yetian1 - (took 252s)
+9149-yetian1 - (took 248s)
+9150-yetian1 - (took 217s)
+9151-yetian1 - (took 215s)
+9152-yetian1 - (took 182s)
+9153-yetian1 - (took 195s)
+9154-yetian1 - (took 197s)
+9155-yetian1 - (took 181s)
+9156-yetian1 - (took 177s)
+9157-yetian1 - (took 164s)
+9158-yetian1 - (took 297s)
+9159-yetian1 - (took 295s)
+9160-yetian1 - (took 274s)
+
+9074-yetian1  deep2   0    31651s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=1
+9075-yetian1  deep1   1    31640s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=2
+9076-yetian1  deep1   2    31630s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=3
+9077-yetian1  deep1   3    31619s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=4
+9078-yetian1  deep3   0    31608s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=5
+9079-yetian1  deep3   1    31595s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=6
+9081-yetian1  deep3   2    29475s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=7
+9082-yetian1  deep3   3    29462s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=8
+9083-yetian1  deep4   0    29452s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=9
+9084-yetian1  deep4   1    29441s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=10
+9085-yetian1  deep4   2    29432s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=11
+9086-yetian1  deep4   3    29421s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=12
+9087-yetian1  deep5   0    29409s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=13
+9088-yetian1  deep5   1    29398s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=14
+9089-yetian1  deep5   2    26562s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=15
+9090-yetian1  deep6   0    26551s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=16
+9091-yetian1  deep6   1    26540s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=17
+9092-yetian1  deep6   2    26530s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=18
+9093-yetian1  deep6   3    26517s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=19
+9094-yetian1  deep7   0    26510s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh   DQ_RANGE=1-16
+DQ_TASK=20
+
+
+2-layer-lstm
+9074-9079 9081-9094
+
+pyramid-lstm
+9022-9041
+
+att-lstm
+8947-yetian1  deep1   1    31843s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=1
+8948-yetian1  deep1   2    31836s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=2
+8949-yetian1  deep1   3    31828s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=3
+8950-yetian1  deep2   0    31820s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=4
+8951-yetian1  deep3   0    31813s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=5
+8952-yetian1  deep3   1    31805s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=6
+8953-yetian1  deep3   2    31798s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=7
+8954-yetian1  deep3   3    31790s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=8
+8955-yetian1  deep4   0    31783s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=9
+8956-yetian1  deep4   1    31775s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=10
+8957-yetian1  deep4   2    31768s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=11
+8958-yetian1  deep4   3    31761s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=12
+8959-yetian1  deep5   0    31753s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=13
+8960-yetian1  deep5   1    31745s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=14
+8961-yetian1  deep5   2    31737s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=15
+8962-yetian1  deep6   0    31728s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=16
+8963-yetian1  deep6   1    31720s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=17
+8964-yetian1  deep6   2    31713s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=18
+8965-yetian1  deep6   3    31706s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=19
+8966-yetian1  deep7   0    31698s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh
+DQ_RANGE=1-16     DQ_TASK=20
+
+
+JobID         Host   GPU  Runtime  Script                                                 Env
+-----         ----   ---  -------  ------                                                 ---
+8927-yetian1  deep1  1    153s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=1
+8928-yetian1  deep1  2    146s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=2
+8929-yetian1  deep1  3    138s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=3
+8930-yetian1  deep2  0    130s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=4
+8931-yetian1  deep3  0    123s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=5
+8932-yetian1  deep3  1    115s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=6
+8933-yetian1  deep3  2    107s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=7
+8934-yetian1  deep3  3    100s     /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=8
+8935-yetian1  deep4  0    92s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=9
+8936-yetian1  deep4  1    85s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=10
+8937-yetian1  deep4  2    77s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=11
+8938-yetian1  deep4  3    70s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=12
+8939-yetian1  deep5  0    62s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=13
+8940-yetian1  deep5  1    54s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=14
+8941-yetian1  deep5  2    47s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=15
+8942-yetian1  deep6  0    39s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=16
+8943-yetian1  deep6  1    32s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=17
+8944-yetian1  deep6  2    24s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=18
+8945-yetian1  deep6  3    13s      /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=19
+8946-yetian1  deep7  0    6s       /deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16  DQ_TASK=20
+
+
+
+JobID         Host   GPU  Runtime  Script
+Env
+-----         ----   ---  -------  ------
+---
+8907-yetian1  deep1  1    579s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=1
+8908-yetian1  deep1  2    572s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=2
+8909-yetian1  deep1  3    564s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=3
+8910-yetian1  deep2  0    557s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=4
+8911-yetian1  deep3  0    549s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=5
+8912-yetian1  deep3  1    541s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=6
+8913-yetian1  deep3  2    534s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=7
+8914-yetian1  deep3  3    526s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=8
+8915-yetian1  deep4  0    519s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=9
+8916-yetian1  deep4  1    511s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=10
+8917-yetian1  deep4  2    504s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=11
+8918-yetian1  deep4  3    496s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=12
+8919-yetian1  deep5  0    484s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=13
+8920-yetian1  deep5  1    476s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=14
+8921-yetian1  deep5  2    469s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=15
+8922-yetian1  deep6  0    461s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=16
+8923-yetian1  deep6  1    453s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=17
+8924-yetian1  deep6  2    446s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=18
+8925-yetian1  deep6  3    438s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=19
+8926-yetian1  deep7  0    430s
+/deep/u/yetian1/mycode/NeuralCraft/QA/dq_singlejob.sh  DQ_RANGE=1-16
+DQ_TASK=20
+
+
+Locking... locked.
+Job ID: '8907-yetian1'
+Locking... locked.
+Executing '8907-yetian1' on deep1/1 as yetian1...
+No screen session found.
+Locking... locked.
+Job ID: '8908-yetian1'
+Locking... locked.
+Executing '8908-yetian1' on deep1/2 as yetian1...
+Locking... locked.
+Job ID: '8909-yetian1'
+Locking... locked.
+Executing '8909-yetian1' on deep1/3 as yetian1...
+Locking... locked.
+Job ID: '8910-yetian1'
+Locking... locked.
+Executing '8910-yetian1' on deep2/0 as yetian1...
+Locking... locked.
+Job ID: '8911-yetian1'
+Locking... locked.
+Executing '8911-yetian1' on deep3/0 as yetian1...
+Locking... locked.
+Job ID: '8912-yetian1'
+Locking... locked.
+Executing '8912-yetian1' on deep3/1 as yetian1...
+Locking... locked.
+Job ID: '8913-yetian1'
+Locking... locked.
+Executing '8913-yetian1' on deep3/2 as yetian1...
+Locking... locked.
+Job ID: '8914-yetian1'
+Locking... locked.
+Executing '8914-yetian1' on deep3/3 as yetian1...
+Locking... locked.
+Job ID: '8915-yetian1'
+Locking... locked.
+Executing '8915-yetian1' on deep4/0 as yetian1...
+Locking... locked.
+Job ID: '8916-yetian1'
+Locking... locked.
+Executing '8916-yetian1' on deep4/1 as yetian1...
+Locking... locked.
+Job ID: '8917-yetian1'
+Locking... locked.
+Executing '8917-yetian1' on deep4/2 as yetian1...
+Locking... locked.
+Job ID: '8918-yetian1'
+Locking... locked.
+Executing '8918-yetian1' on deep4/3 as yetian1...
+Locking... locked.
+Job ID: '8919-yetian1'
+Locking... locked.
+Executing '8919-yetian1' on deep5/0 as yetian1...
+Locking... locked.
+Job ID: '8920-yetian1'
+Locking... locked.
+Executing '8920-yetian1' on deep5/1 as yetian1...
+Locking... locked.
+Job ID: '8921-yetian1'
+Locking... locked.
+Executing '8921-yetian1' on deep5/2 as yetian1...
+Locking... locked.
+Job ID: '8922-yetian1'
+Locking... locked.
+Executing '8922-yetian1' on deep6/0 as yetian1...
+Locking... locked.
+Job ID: '8923-yetian1'
+Locking... locked.
+Executing '8923-yetian1' on deep6/1 as yetian1...
+Locking... locked.
+Job ID: '8924-yetian1'
+Locking... locked.
+Executing '8924-yetian1' on deep6/2 as yetian1...
+Locking... locked.
+Job ID: '8925-yetian1'
+Locking... locked.
+Executing '8925-yetian1' on deep6/3 as yetian1...
+Locking... locked.
+Job ID: '8926-yetian1'
+Locking... locked.
+Executing '8926-yetian1' on deep7/0 as yetian1...

@@ -1,7 +1,7 @@
 {
     "data_options": {
         "data_path": "bAbI",
-        "task_number": 19,
+        "task_number": 2,
         "language": "en-10k",
         "reader": "minibatch"
     },

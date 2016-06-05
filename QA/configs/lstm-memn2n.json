@@ -8,24 +8,24 @@
     "log_options": {
         "dump_epoch": 10,
         "dump_path": "configs",
-        "dump_name": "memn2n.json",
+        "dump_name": "lstm-memn2n.json",
         "dump_config": false
     },
     "optimization_options": {
         "learning_rate": 0.01,
         "batch_size_train": 32,
-        "batch_size_test": 128,
+        "batch_size_test": null,
         "optimizer": "rmsprop",
         "max_epoch": 200,
         "verbose": true,
         "disp_iter": 20,
         "decay": 0.5,
         "decay_period": 25,
-        "weight_path": "weights/memn2n",
+        "weight_path": "weights/lstm-memn2n",
         "load_params": false,
-        "load_name": "memn2n-10k.pkl",
+        "load_name": "lstm-memn2n.pkl",
         "dump_params": true,
-        "dump_name": "memn2n-10k.pkl",
+        "dump_name": "lstm-memn2n.pkl",
         "shuffle": true,
         "linear_start": false,
         "linear_start_lazy": 5,
@@ -35,7 +35,7 @@
         "reg_weight": 0.0002
     },
     "model_options": {
-        "model_name": "memn2n",
+        "model_name": "lstm-memn2n",
         "context_length": null,
         "context_length_percentage": 0.75,
         "sentence_length": 20,
