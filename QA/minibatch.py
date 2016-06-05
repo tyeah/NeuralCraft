@@ -7,7 +7,8 @@ import numpy as np
 from QAReader import *
 
 class MinibatchReader(QAReader):
-    def __init__(self, filename, context_length, sentence_length, segmenter=None, dictionaries=None, **kws):
+    def __init__(self, filename, sentence_length, context_length=None, 
+                 context_length_percentage=None, segmenter=None, dictionaries=None, **kws):
         if not segmenter:
             segmenter = self.segment
 
@@ -15,6 +16,10 @@ class MinibatchReader(QAReader):
         story = None
 
         self.sentence_length = sentence_length
+        if not context_length:
+            context_length = self.find_context_length(filename)
+        if context_length_percentage:
+            context_length = int(context_length * context_length_percentage)
         self.context_length = context_length
 
         word_counter = Counter()
@@ -27,6 +32,8 @@ class MinibatchReader(QAReader):
                             if build_dictionary else dictionaries[1]
         with open(filename, 'r') as file:
             self.stories = []
+            self.max_sentence_count = 0
+            sentence_count = 0
             for line in file:
                 ''' foreach Sentence
                 if is_Context: save for later
@@ -40,7 +47,10 @@ class MinibatchReader(QAReader):
                     context_id_mapping = {}
                     index_without_question_mapping = {}
                     contexts_list = []
+                    self.max_sentence_count = max(self.max_sentence_count, sentence_count)
+                    sentence_count = 0
 
+                sentence_count += 1
                 if '?' in string: # this is a question
                     question, answer, evidences = string.split('\t')
                     question = segmenter(question[:-1])
@@ -77,6 +87,22 @@ class MinibatchReader(QAReader):
             self.EOS = self.specialWords['<EOS>']
             self.UNKNOWN = self.specialWords['<UNKNOWN>']
 
+    @staticmethod
+    def find_context_length(filename):
+        max_sentence_count = 0
+        sentence_count = 0
+        with open(filename, 'r') as file:
+            for line in file:
+                id = int(line.split(' ', 1)[0])
+                if id == 1:
+                    max_sentence_count = max(max_sentence_count,
+                                             sentence_count)
+                    sentence_count = 0
+                sentence_count += 1
+            if sentence_count > 1:
+                max_sentence_count = max(max_sentence_count,
+                                         sentence_count)
+        return max_sentence_count
 
     def minibatch(self, batch_size=None, shuffle=True):
         data_size = len(self.stories)
