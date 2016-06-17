@@ -21,7 +21,7 @@
         "disp_iter": 20,
         "decay": 0.5,
         "decay_period": 25,
-        "weight_path": "weights/att-memn2n",
+        "weight_path": "weights/att-memn2n-deep23",
         "load_params": false,
         "load_name": "att-memn2n.pkl",
         "dump_params": true,

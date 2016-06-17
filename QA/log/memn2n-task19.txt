@@ -1,0 +1,645 @@
+options:
+{
+    "log_options": {
+        "dump_config": false, 
+        "dump_name": "memn2n.json", 
+        "dump_epoch": 10, 
+        "dump_path": "configs"
+    }, 
+    "data_options": {
+        "task_number": 19, 
+        "data_path": "bAbI", 
+        "language": "en-10k", 
+        "reader": "minibatch"
+    }, 
+    "optimization_options": {
+        "disp_iter": 20, 
+        "p_dropout": 0.5, 
+        "optimizer": "rmsprop", 
+        "verbose": true, 
+        "shuffle": true, 
+        "batch_size_train": 32, 
+        "max_epoch": 200, 
+        "learning_rate": 0.01, 
+        "decay": 0.5, 
+        "load_params": false, 
+        "load_name": "memn2n-10k.pkl", 
+        "dump_params": true, 
+        "weight_path": "weights/memn2n", 
+        "linear_start": true, 
+        "reg_weight": 0.0002, 
+        "linear_start_lazy": 5, 
+        "dump_name": "memn2n-10k.pkl", 
+        "batch_size_test": 128, 
+        "decay_period": 25, 
+        "reg": null, 
+        "dropout": false
+    }, 
+    "model_options": {
+        "vocab_size": null, 
+        "embedding_size": 100, 
+        "AB_share": false, 
+        "temporal_encode": true, 
+        "position_encode": true, 
+        "extra_nonlinearity": true, 
+        "num_hid": 32, 
+        "context_length": null, 
+        "sentence_length": 20, 
+        "model_name": "memn2n", 
+        "context_length_percentage": 1.0, 
+        "n_hops": 3
+    }
+}
+context length: 6
+Starting compiling...
+Ending compiling...
+Compiling time: 12.74
+Starting training...
+Average cost in epoch 0: 8.785212
+training accuracy: 0.093750	test accuracy: 0.054688
+Average cost in epoch 1: 2.587720
+training accuracy: 0.156250	test accuracy: 0.070312
+Average cost in epoch 2: 2.520599
+training accuracy: 0.125000	test accuracy: 0.085938
+Average cost in epoch 3: 2.575082
+training accuracy: 0.093750	test accuracy: 0.132812
+Average cost in epoch 4: 3.164950
+training accuracy: 0.156250	test accuracy: 0.078125
+Average cost in epoch 5: 2.533709
+training accuracy: 0.125000	test accuracy: 0.085938
+Average cost in epoch 6: 20.439369
+training accuracy: 0.093750	test accuracy: 0.101562
+Average cost in epoch 7: 3.579331
+training accuracy: 0.031250	test accuracy: 0.148438
+Average cost in epoch 8: 2.623111
+training accuracy: 0.093750	test accuracy: 0.093750
+Average cost in epoch 9: 2.466539
+training accuracy: 0.281250	test accuracy: 0.125000
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 10: 3.904542
+training accuracy: 0.031250	test accuracy: 0.085938
+--------End linear start--------
+Average cost in epoch 11: 2.457712
+training accuracy: 0.062500	test accuracy: 0.070312
+Average cost in epoch 12: 2.454314
+training accuracy: 0.156250	test accuracy: 0.093750
+Average cost in epoch 13: 2.452127
+training accuracy: 0.093750	test accuracy: 0.132812
+Average cost in epoch 14: 2.450923
+training accuracy: 0.031250	test accuracy: 0.078125
+Average cost in epoch 15: 2.448204
+training accuracy: 0.031250	test accuracy: 0.101562
+Average cost in epoch 16: 2.442670
+training accuracy: 0.093750	test accuracy: 0.085938
+Average cost in epoch 17: 2.441830
+training accuracy: 0.062500	test accuracy: 0.125000
+Average cost in epoch 18: 2.439489
+training accuracy: 0.156250	test accuracy: 0.085938
+Average cost in epoch 19: 2.437810
+training accuracy: 0.093750	test accuracy: 0.140625
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 20: 2.438904
+training accuracy: 0.125000	test accuracy: 0.078125
+Average cost in epoch 21: 2.442193
+training accuracy: 0.062500	test accuracy: 0.117188
+Average cost in epoch 22: 2.437042
+training accuracy: 0.093750	test accuracy: 0.078125
+Average cost in epoch 23: 2.454642
+training accuracy: 0.093750	test accuracy: 0.109375
+^CTraceback (most recent call last):
+  File "QAProblem.py", line 235, in <module>
+    exp.train()
+  File "QAProblem.py", line 139, in train
+    cost = self.model.update(c, cmask, u, umask, a, lr)
+  File "/afs/cs.stanford.edu/u/yetian1/.local/lib/python2.7/site-packages/theano/compile/function_module.py", line 859, in __call__
+    outputs = self.fn()
+KeyboardInterrupt
+yetian1@deep20:/deep/u/yetian1/mycode/NeuralCraft/QA$ python QAProblem.py  -o configs/memn2n.json
+/afs/cs.stanford.edu/u/yetian1/.local/lib/python2.7/site-packages/theano/sandbox/cuda/nvcc_compiler.py:224: UserWarning: You have the cuda library directory in your lib_dirs. This has been known to cause problems and should not be done.
+  warnings.warn("You have the cuda library directory in your "
+Using gpu device 0: GeForce GTX TITAN Black (CNMeM is disabled, CuDNN 4007)
+options:
+{
+    "log_options": {
+        "dump_config": false, 
+        "dump_name": "memn2n.json", 
+        "dump_epoch": 10, 
+        "dump_path": "configs"
+    }, 
+    "data_options": {
+        "task_number": 19, 
+        "data_path": "bAbI", 
+        "language": "en-10k", 
+        "reader": "minibatch"
+    }, 
+    "optimization_options": {
+        "disp_iter": 20, 
+        "p_dropout": 0.5, 
+        "optimizer": "rmsprop", 
+        "verbose": true, 
+        "shuffle": true, 
+        "batch_size_train": 32, 
+        "max_epoch": 200, 
+        "learning_rate": 0.005, 
+        "decay": 0.5, 
+        "load_params": false, 
+        "load_name": "memn2n-10k.pkl", 
+        "dump_params": true, 
+        "weight_path": "weights/memn2n", 
+        "linear_start": true, 
+        "reg_weight": 0.0002, 
+        "linear_start_lazy": 5, 
+        "dump_name": "memn2n-10k.pkl", 
+        "batch_size_test": 128, 
+        "decay_period": 25, 
+        "reg": null, 
+        "dropout": false
+    }, 
+    "model_options": {
+        "vocab_size": null, 
+        "embedding_size": 100, 
+        "AB_share": false, 
+        "temporal_encode": true, 
+        "position_encode": true, 
+        "extra_nonlinearity": true, 
+        "num_hid": 32, 
+        "context_length": null, 
+        "sentence_length": 20, 
+        "model_name": "memn2n", 
+        "context_length_percentage": 1.0, 
+        "n_hops": 3
+    }
+}
+context length: 6
+Starting compiling...
+Ending compiling...
+Compiling time: 12.53
+Starting training...
+Average cost in epoch 0: 3.181998
+training accuracy: 0.062500	test accuracy: 0.054688
+Average cost in epoch 1: 2.499148
+training accuracy: 0.156250	test accuracy: 0.156250
+Average cost in epoch 2: 2.472773
+training accuracy: 0.156250	test accuracy: 0.164062
+Average cost in epoch 3: 2.592015
+training accuracy: 0.093750	test accuracy: 0.125000
+Average cost in epoch 4: 2.455947
+training accuracy: 0.156250	test accuracy: 0.125000
+Average cost in epoch 5: 2.435751
+training accuracy: 0.062500	test accuracy: 0.070312
+Average cost in epoch 6: 2.409246
+training accuracy: 0.281250	test accuracy: 0.093750
+Average cost in epoch 7: 2.370692
+training accuracy: 0.062500	test accuracy: 0.148438
+Average cost in epoch 8: 2.298940
+training accuracy: 0.250000	test accuracy: 0.218750
+Average cost in epoch 9: 2.215256
+training accuracy: 0.281250	test accuracy: 0.203125
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 10: 2.144997
+training accuracy: 0.187500	test accuracy: 0.156250
+Average cost in epoch 11: 2.074797
+training accuracy: 0.218750	test accuracy: 0.132812
+Average cost in epoch 12: 2.039170
+training accuracy: 0.281250	test accuracy: 0.226562
+Average cost in epoch 13: 2.004774
+training accuracy: 0.312500	test accuracy: 0.296875
+Average cost in epoch 14: 1.971875
+training accuracy: 0.218750	test accuracy: 0.164062
+Average cost in epoch 15: 1.948417
+training accuracy: 0.218750	test accuracy: 0.226562
+Average cost in epoch 16: 1.899579
+training accuracy: 0.218750	test accuracy: 0.179688
+Average cost in epoch 17: 1.842494
+training accuracy: 0.250000	test accuracy: 0.203125
+Average cost in epoch 18: 1.806695
+training accuracy: 0.187500	test accuracy: 0.242188
+Average cost in epoch 19: 1.770109
+training accuracy: 0.312500	test accuracy: 0.218750
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 20: 1.755957
+training accuracy: 0.312500	test accuracy: 0.242188
+Average cost in epoch 21: 1.725491
+training accuracy: 0.250000	test accuracy: 0.289062
+Average cost in epoch 22: 1.717882
+training accuracy: 0.312500	test accuracy: 0.273438
+Average cost in epoch 23: 1.702619
+training accuracy: 0.281250	test accuracy: 0.312500
+Average cost in epoch 24: 1.702542
+training accuracy: 0.312500	test accuracy: 0.296875
+Average cost in epoch 25: 1.692336
+training accuracy: 0.187500	test accuracy: 0.281250
+lr decays to 0.002500
+Average cost in epoch 26: 1.605514
+training accuracy: 0.156250	test accuracy: 0.218750
+--------End linear start--------
+Average cost in epoch 27: 2.622999
+training accuracy: 0.062500	test accuracy: 0.085938
+Average cost in epoch 28: 2.442299
+training accuracy: 0.250000	test accuracy: 0.109375
+Average cost in epoch 29: 2.389810
+training accuracy: 0.156250	test accuracy: 0.117188
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 30: 2.287508
+training accuracy: 0.250000	test accuracy: 0.210938
+Average cost in epoch 31: 2.155954
+training accuracy: 0.125000	test accuracy: 0.187500
+Average cost in epoch 32: 1.996269
+training accuracy: 0.250000	test accuracy: 0.242188
+Average cost in epoch 33: 1.837091
+training accuracy: 0.312500	test accuracy: 0.226562
+Average cost in epoch 34: 1.736707
+training accuracy: 0.375000	test accuracy: 0.296875
+Average cost in epoch 35: 1.692573
+training accuracy: 0.250000	test accuracy: 0.242188
+Average cost in epoch 36: 1.660766
+training accuracy: 0.250000	test accuracy: 0.312500
+Average cost in epoch 37: 1.637920
+training accuracy: 0.250000	test accuracy: 0.234375
+Average cost in epoch 38: 1.601823
+training accuracy: 0.343750	test accuracy: 0.312500
+Average cost in epoch 39: 1.495098
+training accuracy: 0.625000	test accuracy: 0.375000
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 40: 1.358309
+training accuracy: 0.375000	test accuracy: 0.367188
+Average cost in epoch 41: 1.277342
+training accuracy: 0.375000	test accuracy: 0.367188
+Average cost in epoch 42: 1.243534
+training accuracy: 0.468750	test accuracy: 0.312500
+Average cost in epoch 43: 1.218644
+training accuracy: 0.437500	test accuracy: 0.312500
+Average cost in epoch 44: 1.193046
+training accuracy: 0.687500	test accuracy: 0.359375
+Average cost in epoch 45: 1.192353
+training accuracy: 0.531250	test accuracy: 0.359375
+Average cost in epoch 46: 1.180756
+training accuracy: 0.531250	test accuracy: 0.351562
+Average cost in epoch 47: 1.164559
+training accuracy: 0.468750	test accuracy: 0.390625
+Average cost in epoch 48: 1.158587
+training accuracy: 0.406250	test accuracy: 0.390625
+Average cost in epoch 49: 1.148378
+training accuracy: 0.531250	test accuracy: 0.289062
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 50: 1.124555
+training accuracy: 0.625000	test accuracy: 0.367188
+lr decays to 0.001250
+Average cost in epoch 51: 1.071761
+training accuracy: 0.281250	test accuracy: 0.437500
+Average cost in epoch 52: 1.053105
+training accuracy: 0.531250	test accuracy: 0.453125
+Average cost in epoch 53: 1.037549
+training accuracy: 0.750000	test accuracy: 0.507812
+Average cost in epoch 54: 1.031062
+training accuracy: 0.593750	test accuracy: 0.468750
+Average cost in epoch 55: 1.009774
+training accuracy: 0.750000	test accuracy: 0.531250
+Average cost in epoch 56: 0.997145
+training accuracy: 0.531250	test accuracy: 0.351562
+Average cost in epoch 57: 0.983788
+training accuracy: 0.593750	test accuracy: 0.492188
+Average cost in epoch 58: 0.966041
+training accuracy: 0.750000	test accuracy: 0.460938
+Average cost in epoch 59: 0.946978
+training accuracy: 0.656250	test accuracy: 0.554688
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 60: 0.937091
+training accuracy: 0.437500	test accuracy: 0.507812
+Average cost in epoch 61: 0.911463
+training accuracy: 0.531250	test accuracy: 0.617188
+Average cost in epoch 62: 0.894697
+training accuracy: 0.625000	test accuracy: 0.453125
+Average cost in epoch 63: 0.871878
+training accuracy: 0.718750	test accuracy: 0.515625
+Average cost in epoch 64: 0.856041
+training accuracy: 0.687500	test accuracy: 0.570312
+Average cost in epoch 65: 0.826632
+training accuracy: 0.656250	test accuracy: 0.609375
+Average cost in epoch 66: 0.806329
+training accuracy: 0.718750	test accuracy: 0.562500
+Average cost in epoch 67: 0.782592
+training accuracy: 0.718750	test accuracy: 0.648438
+Average cost in epoch 68: 0.763242
+training accuracy: 0.718750	test accuracy: 0.664062
+Average cost in epoch 69: 0.733095
+training accuracy: 0.781250	test accuracy: 0.601562
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 70: 0.713604
+training accuracy: 0.562500	test accuracy: 0.703125
+Average cost in epoch 71: 0.681283
+training accuracy: 0.750000	test accuracy: 0.648438
+Average cost in epoch 72: 0.667391
+training accuracy: 0.875000	test accuracy: 0.640625
+Average cost in epoch 73: 0.645342
+training accuracy: 0.750000	test accuracy: 0.640625
+Average cost in epoch 74: 0.625163
+training accuracy: 0.687500	test accuracy: 0.710938
+Average cost in epoch 75: 0.609124
+training accuracy: 0.781250	test accuracy: 0.679688
+lr decays to 0.000625
+Average cost in epoch 76: 0.537115
+training accuracy: 0.687500	test accuracy: 0.687500
+Average cost in epoch 77: 0.528144
+training accuracy: 0.875000	test accuracy: 0.695312
+Average cost in epoch 78: 0.511557
+training accuracy: 0.937500	test accuracy: 0.750000
+Average cost in epoch 79: 0.498670
+training accuracy: 0.875000	test accuracy: 0.742188
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 80: 0.488698
+training accuracy: 0.656250	test accuracy: 0.664062
+Average cost in epoch 81: 0.478951
+training accuracy: 0.781250	test accuracy: 0.710938
+Average cost in epoch 82: 0.468915
+training accuracy: 0.906250	test accuracy: 0.687500
+Average cost in epoch 83: 0.454779
+training accuracy: 0.781250	test accuracy: 0.734375
+Average cost in epoch 84: 0.449685
+training accuracy: 0.812500	test accuracy: 0.734375
+Average cost in epoch 85: 0.440401
+training accuracy: 0.812500	test accuracy: 0.742188
+Average cost in epoch 86: 0.428685
+training accuracy: 0.812500	test accuracy: 0.750000
+Average cost in epoch 87: 0.425099
+training accuracy: 0.812500	test accuracy: 0.726562
+Average cost in epoch 88: 0.413370
+training accuracy: 0.937500	test accuracy: 0.734375
+Average cost in epoch 89: 0.408841
+training accuracy: 0.875000	test accuracy: 0.734375
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 90: 0.402939
+training accuracy: 0.812500	test accuracy: 0.789062
+Average cost in epoch 91: 0.389343
+training accuracy: 0.781250	test accuracy: 0.742188
+Average cost in epoch 92: 0.391860
+training accuracy: 0.875000	test accuracy: 0.742188
+Average cost in epoch 93: 0.381373
+training accuracy: 0.843750	test accuracy: 0.812500
+Average cost in epoch 94: 0.371646
+training accuracy: 0.906250	test accuracy: 0.734375
+Average cost in epoch 95: 0.367610
+training accuracy: 0.843750	test accuracy: 0.796875
+Average cost in epoch 96: 0.361102
+training accuracy: 0.906250	test accuracy: 0.812500
+Average cost in epoch 97: 0.355483
+training accuracy: 0.843750	test accuracy: 0.773438
+Average cost in epoch 98: 0.346798
+training accuracy: 0.906250	test accuracy: 0.789062
+Average cost in epoch 99: 0.346002
+training accuracy: 0.875000	test accuracy: 0.820312
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 100: 0.340511
+training accuracy: 0.875000	test accuracy: 0.757812
+lr decays to 0.000313
+Average cost in epoch 101: 0.310477
+training accuracy: 0.906250	test accuracy: 0.789062
+Average cost in epoch 102: 0.306103
+training accuracy: 0.968750	test accuracy: 0.742188
+Average cost in epoch 103: 0.304426
+training accuracy: 0.812500	test accuracy: 0.796875
+Average cost in epoch 104: 0.297995
+training accuracy: 0.843750	test accuracy: 0.820312
+Average cost in epoch 105: 0.296677
+training accuracy: 0.906250	test accuracy: 0.789062
+Average cost in epoch 106: 0.294916
+training accuracy: 0.968750	test accuracy: 0.804688
+Average cost in epoch 107: 0.291505
+training accuracy: 0.812500	test accuracy: 0.859375
+Average cost in epoch 108: 0.284976
+training accuracy: 0.937500	test accuracy: 0.835938
+Average cost in epoch 109: 0.281868
+training accuracy: 0.937500	test accuracy: 0.765625
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 110: 0.280578
+training accuracy: 0.875000	test accuracy: 0.765625
+Average cost in epoch 111: 0.282951
+training accuracy: 0.812500	test accuracy: 0.828125
+Average cost in epoch 112: 0.272324
+training accuracy: 0.906250	test accuracy: 0.828125
+Average cost in epoch 113: 0.270593
+training accuracy: 0.937500	test accuracy: 0.789062
+Average cost in epoch 114: 0.272878
+training accuracy: 0.906250	test accuracy: 0.843750
+Average cost in epoch 115: 0.263058
+training accuracy: 0.937500	test accuracy: 0.851562
+Average cost in epoch 116: 0.266623
+training accuracy: 0.937500	test accuracy: 0.820312
+Average cost in epoch 117: 0.257727
+training accuracy: 0.906250	test accuracy: 0.820312
+Average cost in epoch 118: 0.258554
+training accuracy: 0.968750	test accuracy: 0.882812
+Average cost in epoch 119: 0.255297
+training accuracy: 0.843750	test accuracy: 0.835938
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 120: 0.253240
+training accuracy: 0.968750	test accuracy: 0.851562
+Average cost in epoch 121: 0.247904
+training accuracy: 0.937500	test accuracy: 0.835938
+Average cost in epoch 122: 0.246723
+training accuracy: 0.843750	test accuracy: 0.796875
+Average cost in epoch 123: 0.242824
+training accuracy: 0.875000	test accuracy: 0.843750
+Average cost in epoch 124: 0.240838
+training accuracy: 0.906250	test accuracy: 0.812500
+Average cost in epoch 125: 0.238183
+training accuracy: 0.906250	test accuracy: 0.867188
+Average cost in epoch 126: 0.234490
+training accuracy: 0.843750	test accuracy: 0.890625
+Average cost in epoch 127: 0.234805
+training accuracy: 0.906250	test accuracy: 0.804688
+Average cost in epoch 128: 0.228616
+training accuracy: 0.968750	test accuracy: 0.875000
+Average cost in epoch 129: 0.225038
+training accuracy: 0.875000	test accuracy: 0.781250
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 130: 0.226940
+training accuracy: 0.968750	test accuracy: 0.835938
+Average cost in epoch 131: 0.221603
+training accuracy: 0.906250	test accuracy: 0.804688
+Average cost in epoch 132: 0.220522
+training accuracy: 0.937500	test accuracy: 0.804688
+Average cost in epoch 133: 0.216813
+training accuracy: 0.937500	test accuracy: 0.875000
+Average cost in epoch 134: 0.216341
+training accuracy: 0.875000	test accuracy: 0.859375
+Average cost in epoch 135: 0.211383
+training accuracy: 0.968750	test accuracy: 0.843750
+Average cost in epoch 136: 0.208147
+training accuracy: 0.937500	test accuracy: 0.882812
+Average cost in epoch 137: 0.209800
+training accuracy: 0.968750	test accuracy: 0.828125
+Average cost in epoch 138: 0.202617
+training accuracy: 0.906250	test accuracy: 0.851562
+Average cost in epoch 139: 0.204204
+training accuracy: 1.000000	test accuracy: 0.867188
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 140: 0.200144
+training accuracy: 0.843750	test accuracy: 0.882812
+Average cost in epoch 141: 0.196739
+training accuracy: 0.937500	test accuracy: 0.859375
+Average cost in epoch 142: 0.196444
+training accuracy: 0.937500	test accuracy: 0.875000
+Average cost in epoch 143: 0.190100
+training accuracy: 0.968750	test accuracy: 0.875000
+Average cost in epoch 144: 0.192712
+training accuracy: 0.968750	test accuracy: 0.828125
+Average cost in epoch 145: 0.189245
+training accuracy: 0.875000	test accuracy: 0.890625
+Average cost in epoch 146: 0.183540
+training accuracy: 0.968750	test accuracy: 0.875000
+Average cost in epoch 147: 0.183727
+training accuracy: 0.875000	test accuracy: 0.890625
+Average cost in epoch 148: 0.183126
+training accuracy: 0.843750	test accuracy: 0.906250
+Average cost in epoch 149: 0.179805
+training accuracy: 1.000000	test accuracy: 0.859375
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 150: 0.179685
+training accuracy: 0.937500	test accuracy: 0.890625
+Average cost in epoch 151: 0.177467
+training accuracy: 0.937500	test accuracy: 0.906250
+Average cost in epoch 152: 0.169960
+training accuracy: 1.000000	test accuracy: 0.890625
+Average cost in epoch 153: 0.168845
+training accuracy: 0.968750	test accuracy: 0.851562
+Average cost in epoch 154: 0.171271
+training accuracy: 0.968750	test accuracy: 0.820312
+Average cost in epoch 155: 0.167186
+training accuracy: 0.937500	test accuracy: 0.890625
+Average cost in epoch 156: 0.167362
+training accuracy: 0.968750	test accuracy: 0.875000
+Average cost in epoch 157: 0.160779
+training accuracy: 1.000000	test accuracy: 0.867188
+Average cost in epoch 158: 0.161285
+training accuracy: 0.968750	test accuracy: 0.843750
+Average cost in epoch 159: 0.158913
+training accuracy: 0.968750	test accuracy: 0.898438
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 160: 0.159449
+training accuracy: 1.000000	test accuracy: 0.882812
+Average cost in epoch 161: 0.152666
+training accuracy: 1.000000	test accuracy: 0.882812
+Average cost in epoch 162: 0.153249
+training accuracy: 0.968750	test accuracy: 0.937500
+Average cost in epoch 163: 0.150676
+training accuracy: 0.906250	test accuracy: 0.835938
+Average cost in epoch 164: 0.150458
+training accuracy: 1.000000	test accuracy: 0.914062
+Average cost in epoch 165: 0.147404
+training accuracy: 1.000000	test accuracy: 0.882812
+Average cost in epoch 166: 0.146350
+training accuracy: 1.000000	test accuracy: 0.882812
+Average cost in epoch 167: 0.143913
+training accuracy: 0.968750	test accuracy: 0.921875
+Average cost in epoch 168: 0.139413
+training accuracy: 0.968750	test accuracy: 0.882812
+Average cost in epoch 169: 0.142082
+training accuracy: 0.968750	test accuracy: 0.898438
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 170: 0.139398
+training accuracy: 1.000000	test accuracy: 0.906250
+Average cost in epoch 171: 0.135373
+training accuracy: 0.968750	test accuracy: 0.859375
+Average cost in epoch 172: 0.134874
+training accuracy: 0.968750	test accuracy: 0.921875
+Average cost in epoch 173: 0.133542
+training accuracy: 0.937500	test accuracy: 0.875000
+Average cost in epoch 174: 0.133423
+training accuracy: 1.000000	test accuracy: 0.906250
+Average cost in epoch 175: 0.130879
+training accuracy: 1.000000	test accuracy: 0.953125
+Average cost in epoch 176: 0.129633
+training accuracy: 1.000000	test accuracy: 0.906250
+Average cost in epoch 177: 0.128289
+training accuracy: 0.968750	test accuracy: 0.875000
+Average cost in epoch 178: 0.123985
+training accuracy: 1.000000	test accuracy: 0.851562
+Average cost in epoch 179: 0.123690
+training accuracy: 0.937500	test accuracy: 0.898438
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 180: 0.125568
+training accuracy: 1.000000	test accuracy: 0.843750
+Average cost in epoch 181: 0.120322
+training accuracy: 0.968750	test accuracy: 0.929688
+Average cost in epoch 182: 0.121745
+training accuracy: 0.968750	test accuracy: 0.929688
+Average cost in epoch 183: 0.118913
+training accuracy: 0.968750	test accuracy: 0.921875
+Average cost in epoch 184: 0.118083
+training accuracy: 1.000000	test accuracy: 0.890625
+Average cost in epoch 185: 0.117353
+training accuracy: 1.000000	test accuracy: 0.937500
+Average cost in epoch 186: 0.113262
+training accuracy: 1.000000	test accuracy: 0.937500
+Average cost in epoch 187: 0.114505
+training accuracy: 0.906250	test accuracy: 0.921875
+Average cost in epoch 188: 0.110313
+training accuracy: 0.968750	test accuracy: 0.914062
+Average cost in epoch 189: 0.111320
+training accuracy: 1.000000	test accuracy: 0.867188
+
+dump to weights/memn2n/memn2n-10k.pkl
+
+Average cost in epoch 190: 0.110227
+training accuracy: 0.968750	test accuracy: 0.906250
+Average cost in epoch 191: 0.106886
+training accuracy: 0.937500	test accuracy: 0.945312
+Average cost in epoch 192: 0.107559
+training accuracy: 1.000000	test accuracy: 0.929688
+Average cost in epoch 193: 0.106068
+training accuracy: 1.000000	test accuracy: 0.890625
+Average cost in epoch 194: 0.103972
+training accuracy: 0.937500	test accuracy: 0.914062
+Average cost in epoch 195: 0.101691
+training accuracy: 1.000000	test accuracy: 0.937500
+Average cost in epoch 196: 0.101123
+training accuracy: 1.000000	test accuracy: 0.890625
+Average cost in epoch 197: 0.102186
+training accuracy: 0.968750	test accuracy: 0.906250
+Average cost in epoch 198: 0.097545
+training accuracy: 1.000000	test accuracy: 0.890625
+Average cost in epoch 199: 0.098726
+training accuracy: 1.000000	test accuracy: 0.843750
+
+dump to weights/memn2n/memn2n-10k.pkl

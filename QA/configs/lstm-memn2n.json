@@ -14,7 +14,7 @@
     "optimization_options": {
         "learning_rate": 0.01,
         "batch_size_train": 32,
-        "batch_size_test": null,
+        "batch_size_test": 256,
         "optimizer": "rmsprop",
         "max_epoch": 200,
         "verbose": true,

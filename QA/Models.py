@@ -141,6 +141,7 @@ class MemN2N_Model(Model):
         n_hops = self.mo['n_hops']
         pe = self.mo['position_encode']
         te = self.mo['temporal_encode']
+        exn = self.mo['extra_nonlinearity']
 
         u_shape = ('x', sl)
         c_shape = ('x', cl, sl)
@@ -252,6 +253,8 @@ class MemN2N_Model(Model):
                                              w_name='H')
                 net['u_combine_%d' % nh] = layers.ElementwiseCombineLayer(
                     (net['u_combine_%d' % nh], net['o_%d' % (nh - 1)]), T.add)
+                if exn:
+                    net['u_combine_%d' % nh] = (T.nnet.relu(net['u_combine_%d' % nh][0]), net['u_combine_%d' % nh][1])
                 net['a_emb_%d' % nh] = layers.EmbeddingLayer(
                     c_in, self.params, vs,
                     es, w_name='A')
@@ -303,6 +306,8 @@ class MemN2N_Model(Model):
         if self.oo['dropout']:
             net['ou'] = layers.DropoutLayer(net['ou'], self.use_noise,
                                             self.oo['p_dropout'])
+        if exn:
+            net['ou'] = (T.nnet.relu(net['ou'][0]), net['ou'][1])
 
         net['output'] = layers.LinearLayer(
             net['ou'],
